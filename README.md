@@ -12,10 +12,9 @@ Everything runs in the browser. The sheet and photos are never uploaded anywhere
 - `src/core.js` – reading the sheet: cleaning names, phone numbers and experience, finding duplicates, matching photos.
 - `build.js` – rebuilds `index.html` after you edit anything in `src/`.
 
-## Host it
+## Live Website
 
-Any static host works. Easiest: put `index.html` in a folder and drag the folder onto
-https://app.netlify.com/drop. Or upload it to a GitHub repo and turn on GitHub Pages.
+👉 **[https://shivikadhawan.github.io/intras-auction/](https://shivikadhawan.github.io/intras-auction/)**
 
 ## Edit it
 
