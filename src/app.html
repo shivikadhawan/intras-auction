@@ -1,0 +1,2096 @@
+<title>Intras Auction Deck</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:ital,wght@0,400;0,500;0,600;1,500&family=Big+Shoulders+Display:wght@700;800;900&display=swap">
+<style>
+/* Layout: a plain working tool. Thin top bar with the three actions; a settings column on the left,
+   read top to bottom in the order you'd do things; the slides take the rest of the screen. */
+:root {
+  --bg: #F6F5F1;
+  --surface: #FFFFFF;
+  --ink: #1C1E22;
+  --muted: #676C75;
+  --line: #E1DFD7;
+  --accent: #173F8C;
+  --on-accent: #FFFFFF;
+  --good: #2F7D4F;
+  --warn: #A9520C;
+  --body: Barlow, "Segoe UI", Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg: #15171B; --surface: #1D2026; --ink: #ECEDEF; --muted: #9AA0A9; --line: #2D3138; --accent: #7DA4F2; --on-accent: #0E1220; --good: #6CC48E; --warn: #F0A060; color-scheme: dark; } }
+:root[data-theme="dark"] { --bg: #15171B; --surface: #1D2026; --ink: #ECEDEF; --muted: #9AA0A9; --line: #2D3138; --accent: #7DA4F2; --on-accent: #0E1220; --good: #6CC48E; --warn: #F0A060; color-scheme: dark; }
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { background: var(--bg); color: var(--ink); }
+body { font: 15px/1.5 var(--body); }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--surface); }
+.gut { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+
+.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--surface); border-bottom: 1px solid var(--line); }
+.top .gut { display: flex; align-items: center; justify-content: space-between; gap: 10px 20px; flex-wrap: wrap; padding-block: 10px; }
+.brand { display: flex; align-items: baseline; gap: 10px; min-width: 0; }
+.brand h1 { margin: 0; font-size: 17px; font-weight: 600; }
+.brand span { color: var(--muted); font-size: 14px; overflow-wrap: anywhere; }
+.actions { display: flex; gap: 8px; flex-wrap: wrap; }
+button { font: 500 14px/1 var(--body); border-radius: 6px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); padding: 9px 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+button:hover { border-color: var(--muted); }
+button.primary { background: var(--accent); color: var(--on-accent); border-color: var(--accent); font-weight: 600; }
+button:disabled { opacity: .55; cursor: progress; }
+button:focus-visible, select:focus-visible, input:focus-visible, .drop:focus-visible, .thumb:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.app { display: grid; grid-template-columns: 360px minmax(0, 1fr); gap: 0 28px; align-items: start; }
+@media (max-width: 900px) { .app { grid-template-columns: minmax(0, 1fr); } }
+.side { border-right: 1px solid var(--line); padding-right: 24px; min-width: 0; }
+@media (min-width: 901px) { .side { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 55px); max-height: calc(100vh - 55px - env(safe-area-inset-top, 0px)); overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; } }
+h2 .num { display: inline-grid; place-items: center; width: 20px; height: 20px; margin-right: 8px; border-radius: 50%; background: var(--ink); color: var(--bg); font-size: 12px; font-variant-numeric: tabular-nums; vertical-align: 1px; }
+.tcards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.tgroup { grid-column: 1 / -1; font-size: 12.5px; color: var(--muted); margin-top: 4px; }
+.tcard { display: grid; gap: 4px; padding: 4px; border-radius: 6px; text-align: left; font-size: 13px; background: var(--surface); }
+.tcard canvas { width: 100%; height: auto; aspect-ratio: 16 / 9; border-radius: 3px; display: block; background: var(--line); }
+.tcard[aria-checked="true"] { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); font-weight: 600; }
+.wallgroup { grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: baseline; gap: 8px; border-bottom: 1px solid var(--line); padding: 10px 0 6px; font-weight: 600; font-size: 14px; }
+.wallgroup:first-child { padding-top: 0; }
+.wallgroup .n { color: var(--muted); font-weight: 400; font-size: 13px; }
+.thumb .miss { color: var(--warn); }
+.sizes { display: inline-flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+.sizes button { border: 0; border-radius: 0; padding: 5px 10px; font-size: 13px; }
+.sizes button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+@media (max-width: 900px) { .side { border-right: 0; padding-right: 0; } }
+.side section, .side details { padding-block: 18px; border-bottom: 1px solid var(--line); display: grid; gap: 12px; min-width: 0; }
+h2, summary { margin: 0; font-size: 14px; font-weight: 600; }
+summary { cursor: pointer; }
+.hint, .help { margin: 0; color: var(--muted); font-size: 13.5px; }
+.help b { color: var(--ink); font-weight: 600; }
+.path { white-space: normal; background: var(--bg); border: 1px solid var(--line); border-radius: 4px; padding: 0 5px; color: var(--ink); }
+.note { margin: 0; font-size: 13.5px; color: var(--muted); }
+
+.drop { position: relative; border: 1px dashed var(--muted); border-radius: 6px; padding: 10px 12px; background: var(--surface); cursor: pointer; display: grid; grid-template-columns: 24px minmax(0, 1fr); gap: 10px; align-items: center; min-width: 0; }
+.drop svg { width: 24px; height: 24px; color: var(--muted); }
+.drop > div { display: grid; gap: 1px; min-width: 0; }
+.drop:hover, .drop.over { border-color: var(--accent); border-style: solid; }
+.drop strong { font-weight: 600; font-size: 14px; }
+.drop .status { color: var(--muted); font-size: 13.5px; overflow-wrap: anywhere; }
+.drop .status.ok { color: var(--good); }
+.drop input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+
+.tally { margin: 0; font-variant-numeric: tabular-nums; }
+.tally b { font-weight: 600; }
+.tally .warn { color: var(--warn); }
+.checks { display: grid; gap: 8px; }
+.check { display: grid; grid-template-columns: 8px minmax(0, 1fr); gap: 10px; align-items: start; font-size: 13.5px; }
+.check::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--good); margin-top: 6px; }
+.check.warn::before { background: var(--warn); }
+.check > div { min-width: 0; display: grid; gap: 4px; }
+.check .names { color: var(--muted); overflow-wrap: anywhere; }
+.check button { padding: 6px 10px; font-size: 13px; justify-self: start; }
+
+.field { display: grid; gap: 4px; min-width: 0; }
+.field label, .lbl { font-size: 13px; color: var(--muted); }
+input[type=text], select { width: 100%; font: 400 15px var(--body); color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; }
+.row2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; justify-self: start; }
+.seg button { border: 0; border-radius: 0; padding: 7px 12px; font-size: 13.5px; }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+.switch { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 14px; }
+.switch input { width: 16px; height: 16px; accent-color: var(--accent); }
+.swatches { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.swatch { width: 24px; height: 24px; border-radius: 50%; padding: 0; border: 2px solid var(--line); background: var(--c); }
+.swatch[aria-pressed="true"] { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--ink); }
+.swatches input[type=color] { width: 32px; height: 26px; border: 1px solid var(--line); border-radius: 4px; background: var(--surface); padding: 1px; }
+.caps { display: grid; gap: 10px; }
+.capgroups { display: grid; gap: 16px; }
+.capgroup { display: grid; gap: 8px; }
+.capgroup h3 { margin: 0; font-size: 13.5px; font-weight: 600; display: flex; justify-content: space-between; }
+.capgroup h3 span { color: var(--muted); font-weight: 400; }
+.capgroup > button { justify-self: start; }
+.cap { display: grid; grid-template-columns: 52px minmax(0, 1fr) auto; gap: 8px; align-items: center; }
+.cap .ins { display: grid; gap: 4px; min-width: 0; }
+.cap input[type=text] { padding: 6px 8px; font-size: 14px; }
+.capPhoto { width: 52px; height: 72px; border-radius: 4px; border: 1px dashed var(--muted); background: var(--bg) center / cover no-repeat; padding: 2px; font-size: 12px; color: var(--muted); justify-content: center; text-align: center; }
+.capPhoto.has { border-style: solid; border-color: var(--line); color: transparent; }
+.cap .rm { padding: 6px 8px; font-size: 12.5px; color: var(--muted); }
+.mapgrid { display: grid; gap: 10px; }
+.grouplist { display: grid; gap: 6px; }
+.grow { display: grid; grid-template-columns: 22px minmax(0, 1fr) auto auto; gap: 8px; align-items: center; border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; background: var(--surface); font-size: 14px; }
+.grow .n { color: var(--muted); font-variant-numeric: tabular-nums; }
+.grow button { padding: 4px 8px; font-size: 13px; }
+.orderrow { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; }
+.thumb[draggable="true"] { cursor: grab; }
+.thumb.dragging { opacity: .4; }
+.thumb.dropto canvas { outline: 3px solid var(--accent); }
+
+.slides { padding-block: 18px 60px; min-width: 0; }
+.wallhead { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+.wallhead .n { color: var(--muted); font-weight: 400; font-size: 13.5px; margin-left: 6px; }
+.wall { --tw: 240px; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(var(--tw), 100%), 1fr)); gap: 14px 14px; }
+.wall.s { --tw: 170px; } .wall.l { --tw: 360px; }
+.thumb { padding: 0; border: 0; background: none; display: grid; gap: 6px; text-align: left; cursor: pointer; border-radius: 4px; font-weight: 400; }
+.thumb canvas { width: 100%; aspect-ratio: 16 / 9; height: auto; max-width: 100%; border-radius: 3px; display: block; background: var(--line); outline: 1px solid var(--line); }
+.thumb:hover canvas { outline: 2px solid var(--accent); }
+.thumb span { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+
+#presenter { position: fixed; inset: 0; z-index: 50; background: #000; display: grid; place-items: center; }
+#stage { width: 100%; height: 100%; display: block; }
+.hud { position: absolute; left: 0; right: 0; bottom: 0; display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 12px max(16px, env(safe-area-inset-right, 0px)) calc(12px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); opacity: 0; transition: opacity .25s; background: linear-gradient(transparent, rgba(0,0,0,.6)); }
+#presenter:hover .hud, #presenter.touch .hud { opacity: 1; }
+.hud .grp { display: flex; gap: 8px; align-items: center; }
+.hud button { background: rgba(30,30,30,.85); color: #fff; border-color: rgba(255,255,255,.2); }
+.hud .pos { font-size: 15px; color: #fff; font-variant-numeric: tabular-nums; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+#toast { position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 60; background: var(--ink); color: var(--bg); padding: 9px 14px; border-radius: 6px; font-size: 14px; max-width: calc(100% - 32px); }
+</style>
+
+<header class="top">
+  <div class="gut">
+    <div class="brand"><h1>Auction deck</h1><span id="brandEvent"></span></div>
+    <div class="actions">
+      <button class="primary" id="btnPresent" type="button">Present</button>
+      <button id="btnPptx" type="button">Download .pptx</button>
+      <button id="btnPdf" type="button">Download PDF</button>
+    </div>
+  </div>
+</header>
+
+<div class="app gut">
+  <aside class="side">
+    <section aria-labelledby="hFiles">
+      <h2 id="hFiles"><span class="num">1</span>Files</h2>
+      <p class="note" id="demoNote">Showing five made-up players until you add your sheet. Files stay in your browser.</p>
+      <div class="drop" id="dropSheet" tabindex="0" role="button" aria-label="Upload response sheet">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h8l4 4v14H6z M14 3v4h4 M9 12h6 M9 15h6 M9 18h4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+        <div><strong>Responses</strong><span class="status" id="sheetStatus">Choose the .xlsx or .csv, or drop it here</span></div>
+        <input type="file" id="inSheet" accept=".xlsx,.xls,.csv">
+      </div>
+      <div class="drop" id="dropPhotos" tabindex="0" role="button" aria-label="Upload photos">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v14H4z M4 16l5-5 4 4 3-3 4 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><circle cx="15.5" cy="9" r="1.5" fill="currentColor"/></svg>
+        <div><strong>Photos</strong><span class="status" id="photoStatus">Choose the .zip or the image files</span></div>
+        <input type="file" id="inPhotos" multiple accept=".zip,image/*,.heic,.heif,.pdf">
+      </div>
+      <p class="help">Forms keeps uploads in the owner's OneDrive under <span class="path">Apps › Microsoft Forms › [form] › Question</span>. Download that folder and drop it in. Don't rename the files; that's how they're matched.</p>
+    </section>
+
+    <section aria-labelledby="hCheck">
+      <h2 id="hCheck"><span class="num">2</span>Check</h2>
+      <p class="tally" id="counts"></p>
+      <div class="checks" id="checks"></div>
+    </section>
+
+    <section aria-labelledby="hLook">
+      <h2 id="hLook"><span class="num">3</span>Look</h2>
+      <div class="field"><label for="sEvent">Event name</label><input type="text" id="sEvent"></div>
+      <div class="row2">
+        <div class="field"><label for="sSport">Sport</label><select id="sSport"></select></div>
+        <div class="field"><label for="sDate">Date</label><input type="text" id="sDate"></div>
+      </div>
+      <div class="field"><span class="lbl" id="lTheme">Theme</span>
+        <select id="sStyle" hidden></select>
+        <div class="tcards" id="themeCards" role="radiogroup" aria-labelledby="lTheme"></div>
+      </div>
+      <div class="field"><span class="lbl">Highlight colour (court, net and ball themes)</span>
+        <div class="swatches" id="swatches"></div>
+      </div>
+      <label class="switch" for="sPhone"><input type="checkbox" id="sPhone"> Show phone numbers</label>
+    </section>
+
+    <section aria-labelledby="hOrder">
+      <h2 id="hOrder"><span class="num">4</span>Order</h2>
+      <div class="field"><span class="lbl" id="lGroups">Which group comes first</span>
+        <div class="grouplist" id="groupOrder" role="list" aria-labelledby="lGroups"></div>
+      </div>
+      <div class="field"><label for="sOrder">Players inside each group</label>
+        <div class="orderrow">
+          <select id="sOrder">
+            <option value="sheet">As in the sheet</option>
+            <option value="az">Name, A to Z</option>
+            <option value="za">Name, Z to A</option>
+            <option value="cohort">By cohort, then sheet order</option>
+            <option value="random">Random</option>
+            <option value="custom">My own order (drag slides)</option>
+          </select>
+          <button type="button" id="reshuffle" hidden>Shuffle again</button>
+        </div>
+        <p class="hint" id="orderHint" hidden>Drag a player's slide onto another in the same group to move it there. With a slide selected, Alt + arrow keys also move it.</p>
+      </div>
+    </section>
+
+    <section aria-labelledby="hCaps">
+      <h2 id="hCaps"><span class="num">5</span>Captains</h2>
+      <p class="hint">Girls' and boys' captains each get their own slide, just before that group. Leave the photo empty to use their registration photo.</p>
+      <div class="capgroups" id="caps"></div>
+      <datalist id="playerNamesF"></datalist>
+      <datalist id="playerNamesM"></datalist>
+    </section>
+
+    <details id="mapping">
+      <summary>Column mapping</summary>
+      <div class="mapgrid" id="mapgrid"></div>
+    </details>
+  </aside>
+
+  <main class="slides">
+    <div class="wallhead"><h2>Slides <span class="n" id="wallInfo"></span></h2>
+      <div class="sizes" role="group" aria-label="Thumbnail size"><button type="button" data-size="s">Small</button><button type="button" data-size="m">Medium</button><button type="button" data-size="l">Large</button></div>
+    </div>
+    <div class="wall" id="wall"></div>
+  </main>
+</div>
+
+<div id="presenter" hidden>
+  <canvas id="stage"></canvas>
+  <div class="hud">
+    <div class="grp"><button type="button" id="pPrev" aria-label="Previous slide">‹ Prev</button><button type="button" id="pNext" aria-label="Next slide">Next ›</button></div>
+    <span class="pos" id="pPos"></span>
+    <div class="grp"><button type="button" id="pFull">Fullscreen</button><button type="button" id="pClose">Close</button></div>
+  </div>
+</div>
+<div id="toast" hidden role="status"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script>
+/*CORE*/
+</script>
+<script>
+(() => {
+const $ = id => document.getElementById(id);
+const LIB = {
+  pptx: 'https://cdnjs.cloudflare.com/ajax/libs/pptxgenjs/3.12.0/pptxgen.bundle.js',
+  jspdf: 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
+  pdfWorker: 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js',
+  pdf: 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js',
+  heic: 'https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js',
+};
+const loaded = {};
+function loadScript(src) {
+  if (!loaded[src]) loaded[src] = new Promise((res, rej) => {
+    const s = document.createElement('script'); s.src = src; s.onload = res;
+    s.onerror = () => { delete loaded[src]; rej(new Error('Could not load ' + src)); };
+    document.head.appendChild(s);
+  });
+  return loaded[src];
+}
+
+/* ---------- state ---------- */
+const ACCENTS = ['#FFC23D', '#FF6B4A', '#3DD6F5', '#F25CA2', '#FFFFFF'];
+const today = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+const S = {
+  rows: [], headers: [], map: {}, demo: true, sheetName: '',
+  photos: [],                 // {name, blob}
+  processed: new Map(),       // photo name -> {canvas} | {error}
+  removed: new Set(),
+  settings: { event: 'Intra Volleyball 2026', date: today, order: 'sheet', groupOrder: ['F', 'M', 'U'], seed: 1, style: 'vbmat', v: 2, phone: false, accent: ACCENTS[0] },
+};
+try { Object.assign(S.settings, JSON.parse(localStorage.getItem('auctionDeckSettings') || '{}')); } catch (e) {}
+if (S.settings.v !== 2) { if (S.settings.style === 'sheet') S.settings.style = 'vbmat'; S.settings.v = 2; }
+function saveSettings() { try { localStorage.setItem('auctionDeckSettings', JSON.stringify(S.settings)); } catch (e) {} }
+
+function loadCaptains() {
+  let list = [];
+  try { list = JSON.parse(localStorage.getItem('auctionDeckCaptains') || '[]'); } catch (e) {}
+  if (!Array.isArray(list) || !list.length || list.every(c => !c.g && !String(c.name || '').trim())) list = [{ g: 'F' }, { g: 'F' }, { g: 'M' }, { g: 'M' }];
+  return list.map(c => ({ name: String(c.name || ''), team: String(c.team || ''), photo: c.photo || null, canvas: null, g: c.g === 'M' || c.g === 'F' ? c.g : null }));
+}
+S.captains = loadCaptains();
+function saveCaptains() {
+  const data = S.captains.map(c => ({ name: c.name, team: c.team, photo: c.photo, g: c.g }));
+  try { localStorage.setItem('auctionDeckCaptains', JSON.stringify(data)); }
+  catch (e) { try { localStorage.setItem('auctionDeckCaptains', JSON.stringify(data.map(c => ({ ...c, photo: null })))); } catch (e2) {} }
+}
+const DEMO_HEADERS = ['Id', 'Email', 'Name', 'Name1', 'Category', 'Mobile no.', 'Department / Year', 'Experience', 'Picture'];
+const DEMO = [
+  ['1', 'riya.m@example.edu', 'Riya Malhotra', 'Riya', 'Female', '9800000001', 'UG25', 'School team for 3 years, mostly as setter', ''],
+  ['2', 'ananya.i@example.edu', 'Ananya Iyer', 'Annie', 'Female', '9800000002', 'UG26', 'Beginner, played a bit in hostel', ''],
+  ['3', 'kabir.s@example.edu', 'Kabir Sethi', 'KB', 'Male', '9800000003', 'UG24', 'University team libero, played last intras', ''],
+  ['4', 'arjun.n@example.edu', 'Arjun Nair', 'Arjun Nair', 'Male', '9800000004', 'UG25', 'Played in school', ''],
+  ['5', 'dev.k@example.edu', 'Dev Khanna', 'Dev', 'Male', '9800000005', 'MS/PhD', 'NA', ''],
+].map(r => Object.fromEntries(DEMO_HEADERS.map((h, i) => [h, r[i]])));
+
+/* ---------- ordering ---------- */
+let custom = { F: [], M: [], U: [] };
+try { const c = JSON.parse(localStorage.getItem('auctionDeckCustomOrder') || 'null'); if (c && c.F) custom = c; } catch (e) {}
+function saveCustom() { try { localStorage.setItem('auctionDeckCustomOrder', JSON.stringify(custom)); } catch (e) {} }
+function groupOrder() {
+  const go = Array.isArray(S.settings.groupOrder) ? S.settings.groupOrder.filter(g => 'FMU'.includes(g)) : [];
+  ['F', 'M', 'U'].forEach(g => { if (!go.includes(g)) go.push(g); });
+  return go;
+}
+function orderList(list, g) {
+  const o = S.settings.order, byName = (a, b) => a.name.localeCompare(b.name);
+  if (o === 'az') return list.slice().sort(byName);
+  if (o === 'za') return list.slice().sort((a, b) => byName(b, a));
+  if (o === 'cohort') return list.slice().sort((a, b) => a.cohort.localeCompare(b.cohort, undefined, { numeric: true }) || a.row - b.row);
+  if (o === 'random') {
+    const r = rng(S.settings.seed * 7919 + g.charCodeAt(0));
+    return list.map(p => [r(), p]).sort((a, b) => a[0] - b[0]).map(x => x[1]);
+  }
+  if (o === 'custom') {
+    const idx = new Map((custom[g] || []).map((row, i) => [row, i]));
+    return list.slice().sort((a, b) => (idx.has(a.row) ? idx.get(a.row) : 1e6 + a.row) - (idx.has(b.row) ? idx.get(b.row) : 1e6 + b.row));
+  }
+  return list;
+}
+
+/* ---------- derived ---------- */
+let players = [], dups = new Map(), matched = new Map(), slides = [];
+function derive() {
+  const all = Core.buildPlayers(S.rows, S.map);
+  players = all.filter(p => !S.removed.has(p.row));
+  dups = Core.findDuplicates(players);
+  matched = Core.matchPhotos(players, S.photos);
+  const GI = { F: ['F', 'Girls', 'G'], M: ['M', 'Boys', 'B'], U: ['U', 'Unsorted', 'U'] };
+  const groups = groupOrder().map(g => GI[g]);
+  const counts = { F: 0, M: 0, U: 0 };
+  players.forEach(p => counts[p.gender]++);
+  slides = [{ type: 'title', counts }];
+  // captains saved before the girls/boys split: put them with the group their name matches, else girls
+  S.captains.forEach(c => { if (!c.g) { const k = c.name.toLowerCase().replace(/[^a-z0-9]/g, ''); const p = k && players.find(x => x.name.toLowerCase().replace(/[^a-z0-9]/g, '') === k); c.g = p && p.gender === 'M' ? 'M' : 'F'; } });
+  let n = 0;
+  groups.forEach(([g, label, pre]) => {
+    let list = players.filter(p => p.gender === g);
+    if (!list.length) return;
+    list = orderList(list, g);
+    const caps = S.captains.filter(c => c.g === g && c.name.trim());
+    if (caps.length) slides.push({ type: 'captains', caps, g, label });
+    slides.push({ type: 'section', g, label, count: list.length });
+    list.forEach((p, i) => slides.push({ type: 'player', style: themeOf(), p, g, label, code: pre + '-' + String(i + 1).padStart(2, '0'), num: i + 1, total: list.length }));
+  });
+  return counts;
+}
+function photoFor(p) {
+  const f = matched.get(p.row);
+  if (!f) return null;
+  const pr = S.processed.get(f.name);
+  return pr && pr.canvas ? pr.canvas : null;
+}
+
+/* ---------- canvas slide renderer (1920 x 1080 design units) ---------- */
+const BW = 1920, BH = 1080;
+const F = {
+  display: '"Big Shoulders Display", Impact, "Arial Narrow", sans-serif',
+  body: 'Barlow, "Segoe UI", Arial, sans-serif',
+  cond: '"Barlow Condensed", "Arial Narrow", Arial, sans-serif',
+};
+const C = { ink: '#FFFFFF', muted: 'rgba(255,236,224,0.82)', blue: '#1C4C8A', blueDeep: '#112E58', orange: '#C65A2B', line: '#F4F1E8', bg: '#0B1733', night: '#0A1426' };
+const spacing = (ctx, px) => { try { ctx.letterSpacing = px + 'px'; } catch (e) {} };
+const zoom = ctx => { try { return ctx.getTransform().a; } catch (e) { return 1; } };
+function shadow(ctx, on) {
+  if (!on) { ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0; ctx.shadowOffsetY = 0; return; }
+  const z = zoom(ctx); ctx.shadowColor = 'rgba(35,8,0,0.45)'; ctx.shadowBlur = 16 * z; ctx.shadowOffsetY = 4 * z;
+}
+
+function wrap(ctx, text, maxW) {
+  const words = String(text).split(/\s+/).filter(Boolean);
+  const lines = []; let line = '';
+  for (let w of words) {
+    while (ctx.measureText(w).width > maxW && w.length > 1) {   // break very long words
+      let k = w.length - 1;
+      while (k > 1 && ctx.measureText(w.slice(0, k) + '-').width > maxW) k--;
+      if (line) { lines.push(line); line = ''; }
+      lines.push(w.slice(0, k) + '-'); w = w.slice(k);
+    }
+    const t = line ? line + ' ' + w : w;
+    if (ctx.measureText(t).width <= maxW) line = t; else { if (line) lines.push(line); line = w; }
+  }
+  if (line) lines.push(line);
+  return lines;
+}
+function fit(ctx, text, font, maxW, maxH, maxS, minS, lh, maxLines) {
+  for (let s = maxS; s >= minS; s -= 2) {
+    ctx.font = font(s);
+    const lines = wrap(ctx, text, maxW);
+    if (lines.length * s * lh <= maxH && (!maxLines || lines.length <= maxLines)) return { lines, size: s, lh };
+  }
+  ctx.font = font(minS);
+  let lines = wrap(ctx, text, maxW);
+  const cap = Math.max(1, Math.min(maxLines || 99, Math.floor(maxH / (minS * lh))));
+  if (lines.length > cap) {
+    lines = lines.slice(0, cap);
+    let l = lines[cap - 1];
+    while (l && ctx.measureText(l + '…').width > maxW) l = l.slice(0, -1);
+    lines[cap - 1] = l.replace(/\s+\S*$/, '') + '…';
+  }
+  return { lines, size: minS, lh };
+}
+function drawLines(ctx, block, x, top, font, color) {
+  ctx.font = font(block.size); ctx.fillStyle = color; ctx.textBaseline = 'top';
+  block.lines.forEach((l, i) => ctx.fillText(l, x, top + i * block.size * block.lh));
+}
+function roundRect(ctx, x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
+
+/* ---- the sport: an indoor court floor (orange court, blue free zone, 5 cm white lines) and the net ---- */
+function rng(seed) { return () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; }; }
+let _grain = null;
+function grain() {
+  if (_grain) return _grain;
+  const c = document.createElement('canvas'); c.width = c.height = 256;
+  const x = c.getContext('2d'), d = x.createImageData(256, 256), r = rng(11);
+  for (let i = 0; i < d.data.length; i += 4) { const v = 96 + r() * 64 | 0; d.data[i] = d.data[i + 1] = d.data[i + 2] = v; d.data[i + 3] = 255; }
+  x.putImageData(d, 0, 0); return (_grain = c);
+}
+function floorFinish(ctx, lightX, lightY) {
+  // vinyl sports floor: fine stipple, roll seams every ~2 m, overhead hall lights, darker corners
+  ctx.save();
+  ctx.globalCompositeOperation = 'overlay'; ctx.globalAlpha = 0.22;
+  ctx.fillStyle = ctx.createPattern(grain(), 'repeat'); ctx.fillRect(0, 0, BW, BH);
+  ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1;
+  ctx.fillStyle = 'rgba(0,0,0,0.05)';
+  for (let x = 120; x < BW; x += 236) ctx.fillRect(x, 0, 2, BH);
+  let g = ctx.createRadialGradient(lightX, lightY, 40, lightX, lightY, 1150);
+  g.addColorStop(0, 'rgba(255,248,235,0.20)'); g.addColorStop(0.5, 'rgba(255,248,235,0.06)'); g.addColorStop(1, 'rgba(255,248,235,0)');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, BW, BH);
+  g = ctx.createRadialGradient(BW / 2, BH / 2, 500, BW / 2, BH / 2, 1250);
+  g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(0,0,0,0.42)');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, BW, BH);
+  ctx.restore();
+}
+function lineRect(ctx, x, y, w, h) { ctx.fillStyle = C.line; ctx.fillRect(x, y, w, h); }
+
+const BG = {};
+function bgCanvas(key, paint) {
+  if (BG[key]) return BG[key];
+  const c = document.createElement('canvas'); c.width = BW; c.height = BH;
+  paint(c.getContext('2d')); return (BG[key] = c);
+}
+// player slide: the corner of the court. Photo sits on the left sideline, the end line runs under the header.
+const COURT_X = 768, END_Y = 172, RIGHT_X = 1856;
+function paintPlayerBg(ctx) {
+  ctx.fillStyle = C.blue; ctx.fillRect(0, 0, BW, BH);
+  ctx.fillStyle = C.orange; ctx.fillRect(COURT_X, END_Y, RIGHT_X - COURT_X, BH - END_Y);
+  lineRect(ctx, COURT_X, END_Y, RIGHT_X - COURT_X, 13);           // end line
+  lineRect(ctx, COURT_X, END_Y, 13, BH - END_Y);                    // left sideline
+  lineRect(ctx, RIGHT_X - 13, END_Y, 13, BH - END_Y);               // right sideline
+  floorFinish(ctx, 1380, 380);
+}
+// title slide: the whole court from above, net across the middle
+function paintTitleBg(ctx) {
+  ctx.fillStyle = C.blue; ctx.fillRect(0, 0, BW, BH);
+  const x = 700, y = 160, w = 1520, h = w / 2;   // 18 m x 9 m
+  ctx.fillStyle = C.orange; ctx.fillRect(x, y, w, h);
+  const t = 12;
+  lineRect(ctx, x, y, w, t); lineRect(ctx, x, y + h - t, w, t); lineRect(ctx, x, y, t, h);
+  const cx = x + w / 2, a = w / 6;                                  // centre line, attack lines 3 m from it
+  lineRect(ctx, cx - t / 2, y, t, h); lineRect(ctx, cx - a - t / 2, y, t, h); lineRect(ctx, cx + a - t / 2, y, t, h);
+  // attack-line extensions: dashed into the free zone
+  for (const ax of [cx - a, cx + a]) for (let k = 0; k < 5; k++) { lineRect(ctx, ax - t / 2, y - 40 - k * 70, t, 30); lineRect(ctx, ax - t / 2, y + h + 10 + k * 70, t, 30); }
+  // net seen from above: its shadow on the floor, the cable, and the posts 1 m outside the sidelines
+  ctx.fillStyle = 'rgba(0,0,0,0.22)'; ctx.fillRect(cx + 6, y - 90, 26, h + 180);
+  ctx.fillStyle = '#16181C'; ctx.fillRect(cx - 5, y - 90, 10, h + 180);
+  ctx.fillStyle = '#D9DCE2';
+  for (const py of [y - 90, y + h + 90]) { ctx.beginPath(); ctx.arc(cx, py, 18, 0, Math.PI * 2); ctx.fill(); }
+  floorFinish(ctx, 1300, 420);
+  // keep the left side calmer for the event name
+  const g = ctx.createLinearGradient(0, 0, 1300, 0);
+  g.addColorStop(0, 'rgba(10,20,38,0.55)'); g.addColorStop(1, 'rgba(10,20,38,0)');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, BW, BH);
+}
+// section slide: courtside view of the net in a dark hall
+const NET_TOP = 300, NET_H = 290;
+function paintSectionBack(ctx) {
+  let g = ctx.createLinearGradient(0, 0, 0, 840);
+  g.addColorStop(0, '#060C18'); g.addColorStop(1, '#13264A');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, BW, BH);
+  // hall lights
+  for (const lx of [260, 760, 1260, 1760]) {
+    g = ctx.createRadialGradient(lx, -40, 10, lx, -40, 420);
+    g.addColorStop(0, 'rgba(255,246,225,0.30)'); g.addColorStop(1, 'rgba(255,246,225,0)');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, BW, 500);
+  }
+  // floor: free zone then court, seen side-on
+  ctx.fillStyle = C.blue; ctx.fillRect(0, 840, BW, BH - 840);
+  ctx.fillStyle = C.orange; ctx.fillRect(0, 880, BW, BH - 880);
+  lineRect(ctx, 0, 880, BW, 8);
+  ctx.save(); ctx.beginPath(); ctx.rect(0, 840, BW, BH - 840); ctx.clip(); floorFinish(ctx, BW / 2, 900); ctx.restore();
+  // posts
+  ctx.fillStyle = '#C9CDD4'; ctx.fillRect(40, 190, 30, 690); ctx.fillRect(BW - 70, 190, 30, 690);
+}
+function paintNet(ctx) {
+  const L = 70, R = BW - 70, cell = 30;
+  ctx.save();
+  ctx.strokeStyle = 'rgba(12,12,14,0.92)'; ctx.lineWidth = 3;
+  ctx.beginPath();
+  for (let x = L + cell; x < R; x += cell) { ctx.moveTo(x, NET_TOP); ctx.lineTo(x, NET_TOP + NET_H); }
+  for (let y = NET_TOP + cell; y < NET_TOP + NET_H; y += cell) { ctx.moveTo(L, y); ctx.lineTo(R, y); }
+  ctx.stroke();
+  // white top band (7 cm) and bottom band, side bands
+  ctx.fillStyle = '#F2F2EF'; ctx.fillRect(L, NET_TOP - 4, R - L, 26); ctx.fillRect(L, NET_TOP + NET_H - 12, R - L, 14);
+  ctx.fillRect(L + 330, NET_TOP - 4, 12, NET_H + 8); ctx.fillRect(R - 342, NET_TOP - 4, 12, NET_H + 8);
+  // antennas: red and white, 10 cm stripes, 80 cm above the net
+  for (const ax of [L + 333, R - 339]) {
+    for (let k = 0; k < 18; k++) { ctx.fillStyle = k % 2 ? '#F2F2EF' : '#D7262E'; ctx.fillRect(ax, NET_TOP - 210 + k * 26, 8, 26); }
+  }
+  ctx.restore();
+}
+
+/* ---- player slide styles ---- */
+function noiseLayer(ctx, alpha, seed, lo, hi) {
+  const c = document.createElement('canvas'); c.width = c.height = 256;
+  const x = c.getContext('2d'), d = x.createImageData(256, 256), r = rng(seed);
+  for (let i = 0; i < d.data.length; i += 4) { const v = lo + r() * (hi - lo) | 0; d.data[i] = d.data[i + 1] = d.data[i + 2] = v; d.data[i + 3] = 255; }
+  x.putImageData(d, 0, 0);
+  ctx.save(); ctx.globalCompositeOperation = 'overlay'; ctx.globalAlpha = alpha; ctx.fillStyle = ctx.createPattern(c, 'repeat'); ctx.fillRect(0, 0, BW, BH); ctx.restore();
+}
+function glow(ctx, x, y, r, a, col) {
+  const g = ctx.createRadialGradient(x, y, 20, x, y, r);
+  g.addColorStop(0, `rgba(${col || '255,248,235'},${a})`); g.addColorStop(1, `rgba(${col || '255,248,235'},0)`);
+  ctx.fillStyle = g; ctx.fillRect(0, 0, BW, BH);
+}
+function darkEdges(ctx, a) {
+  const g = ctx.createRadialGradient(BW / 2, BH / 2, 520, BW / 2, BH / 2, 1250);
+  g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, `rgba(0,0,0,${a})`); ctx.fillStyle = g; ctx.fillRect(0, 0, BW, BH);
+}
+function setShadow(ctx, col, blur) { const z = zoom(ctx); ctx.shadowColor = col; ctx.shadowBlur = (blur || 16) * z; ctx.shadowOffsetY = 4 * z; }
+
+// wood
+function paintWoodBase(ctx) {
+  const r = rng(5); ctx.fillStyle = '#C4955A'; ctx.fillRect(0, 0, BW, BH);
+  for (let y = 0; y < BH; y += 46) {
+    let x = -r() * 600;
+    while (x < BW) {
+      const len = 380 + r() * 620, t = r();
+      ctx.fillStyle = `hsl(${30 + t * 6},${42 + t * 12}%,${50 + t * 12}%)`; ctx.fillRect(x, y, len, 46);
+      ctx.strokeStyle = 'rgba(90,55,25,.18)'; ctx.lineWidth = 1.5;
+      for (let k = 0; k < 5; k++) { ctx.beginPath(); const yy = y + 6 + r() * 34, ph = r() * 6; ctx.moveTo(x, yy); for (let s = 0; s <= len; s += 40) ctx.lineTo(x + s, yy + Math.sin(s / 90 + ph) * 3); ctx.stroke(); }
+      ctx.fillStyle = 'rgba(60,35,15,.35)'; ctx.fillRect(x, y, 2, 46); x += len;
+    }
+    ctx.fillStyle = 'rgba(60,35,15,.3)'; ctx.fillRect(0, y, BW, 2);
+  }
+  noiseLayer(ctx, 0.12, 3, 90, 170); glow(ctx, 1300, 300, 1100, 0.32, '255,240,215');
+}
+function paintWood(ctx) {
+  paintWoodBase(ctx);
+  ctx.fillStyle = 'rgba(23,52,104,.94)'; ctx.fillRect(768, 0, BW, 160);
+  ctx.fillStyle = '#F7F3EA'; ctx.fillRect(768, 160, BW, 12);
+  ctx.fillStyle = '#F2C230'; ctx.fillRect(1700, 172, 12, BH);
+  darkEdges(ctx, 0.35);
+}
+// sand
+function paintSandBase(ctx) {
+  ctx.fillStyle = '#E2C796'; ctx.fillRect(0, 0, BW, BH); const r = rng(9);
+  for (let i = 0; i < 60; i++) { ctx.strokeStyle = `rgba(150,110,60,${0.05 + r() * 0.06})`; ctx.lineWidth = 6 + r() * 10; ctx.beginPath(); const y = r() * BH, ph = r() * 6; ctx.moveTo(0, y); for (let x = 0; x <= BW; x += 30) ctx.lineTo(x, y + Math.sin(x / 140 + ph) * 18); ctx.stroke(); }
+  noiseLayer(ctx, 0.55, 21, 60, 200);
+  for (let i = 0; i < 900; i++) { ctx.fillStyle = `rgba(${r() < 0.5 ? '255,255,245' : '110,80,40'},${0.25 + r() * 0.3})`; ctx.fillRect(r() * BW, r() * BH, 2 + r() * 3, 2 + r() * 3); }
+  glow(ctx, 1700, 0, 1500, 0.35, '255,245,215');
+}
+function sandTape(ctx, x, y, w, h) {
+  ctx.fillStyle = 'rgba(60,40,20,.25)'; ctx.fillRect(x + 6, y + 8, w, h);
+  ctx.fillStyle = '#1F5FB8'; ctx.fillRect(x, y, w, h); ctx.fillStyle = 'rgba(255,255,255,.18)'; ctx.fillRect(x, y, w, Math.min(4, h)); ctx.fillRect(x, y, Math.min(4, w), h);
+}
+function paintBeach(ctx) { paintSandBase(ctx); sandTape(ctx, 768, 172, BW, 22); darkEdges(ctx, 0.25); }
+// dark hall with a net across the top
+function paintHall(ctx, netH) {
+  const g = ctx.createLinearGradient(0, 0, 0, BH); g.addColorStop(0, '#05090F'); g.addColorStop(1, '#14223C');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, BW, BH);
+  for (const lx of [300, 1000, 1500, 1900]) glow(ctx, lx, -60, 520, 0.26);
+  return netH;
+}
+function netBand(ctx, x0, h) {
+  ctx.strokeStyle = 'rgba(235,235,235,.85)'; ctx.lineWidth = 3; ctx.beginPath();
+  for (let x = x0; x < BW; x += 30) { ctx.moveTo(x, 0); ctx.lineTo(x, h); }
+  for (let y = h % 30; y < h; y += 30) { ctx.moveTo(x0, y); ctx.lineTo(BW, y); }
+  ctx.stroke();
+  ctx.fillStyle = '#F2F2EF'; ctx.fillRect(x0, h - 4, BW, 24);
+  for (const ax of [x0 + 40 > 200 ? 1780 : 160, 1780]) for (let k = 0; k < Math.ceil(h / 26) + 1; k++) { ctx.fillStyle = k % 2 ? '#F2F2EF' : '#D7262E'; ctx.fillRect(ax, k * 26 - 30, 9, 26); }
+}
+function hallFloor(ctx, x0, y) { ctx.fillStyle = C.orange; ctx.fillRect(x0, y, BW, BH - y); ctx.fillStyle = C.line; ctx.fillRect(x0, y, BW, 8); noiseLayer(ctx, 0.15, 4, 90, 170); }
+function paintUnderNet(ctx) { paintHall(ctx); netBand(ctx, 768, 190); hallFloor(ctx, 768, 1000); }
+// line-up sheet
+const POL = { cx: 410, cy: 540, rot: -0.035, fw: 640, fh: 860, px: -290, py: -400, pw: 580, ph: 720 };
+function paperBase(ctx, col) { ctx.fillStyle = col; ctx.fillRect(0, 0, BW, BH); noiseLayer(ctx, 0.18, 8, 110, 150); }
+function ruled(ctx, x0, x1, y0, y1, step) { ctx.strokeStyle = 'rgba(70,110,160,.32)'; ctx.lineWidth = 2; for (let y = y0; y < y1; y += step) { ctx.beginPath(); ctx.moveTo(x0, y); ctx.lineTo(x1, y); ctx.stroke(); } }
+function sheetHeader(ctx, left, right, x0, x1) {
+  ctx.fillStyle = 'rgba(70,110,160,.9)'; ctx.font = `700 22px ${F.cond}`; spacing(ctx, 3); ctx.textBaseline = 'alphabetic';
+  ctx.fillText(left, x0, 42); ctx.textAlign = 'right'; ctx.fillText(right, x1, 42); ctx.textAlign = 'left'; spacing(ctx, 0);
+}
+function paintSheet(ctx) {
+  paperBase(ctx, '#F2EDE1'); ruled(ctx, 760, 1860, 60, BH, 60);
+  ctx.strokeStyle = 'rgba(70,110,160,.35)'; ctx.lineWidth = 2;
+  for (const x of [840]) { ctx.beginPath(); ctx.moveTo(x, 60); ctx.lineTo(x, 1020); ctx.stroke(); }
+  ctx.strokeStyle = 'rgba(70,110,160,.7)'; ctx.lineWidth = 4; ctx.strokeRect(760, 60, 1100, 960);
+  sheetHeader(ctx, 'PLAYER REGISTRATION  ·  LINE-UP SHEET', 'SET  1  2  3  4  5', 870, 1860);
+  ctx.save(); ctx.translate(POL.cx, POL.cy); ctx.rotate(POL.rot);
+  ctx.shadowColor = 'rgba(0,0,0,.35)'; ctx.shadowBlur = 30; ctx.shadowOffsetY = 12; ctx.fillStyle = '#fff';
+  ctx.fillRect(-POL.fw / 2, -POL.fh / 2, POL.fw, POL.fh); ctx.restore();
+}
+// volleyball
+function ballAt(ctx, cx, cy, R) {
+  ctx.save(); ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI * 2); ctx.clip(); ctx.fillStyle = '#F4C40F'; ctx.fillRect(cx - R, cy - R, 2 * R, 2 * R);
+  const k = R / 760;
+  const band = (ox, oy, r1, r2, col) => { ctx.fillStyle = col; ctx.beginPath(); ctx.arc(ox, oy, r2, 0, Math.PI * 2); ctx.arc(ox, oy, r1, 0, Math.PI * 2, true); ctx.fill('evenodd'); };
+  band(cx - 1500 * k, cy - 200 * k, 1180 * k, 1420 * k, '#1D56B5'); band(cx + 300 * k, cy - 1500 * k, 1150 * k, 1390 * k, '#1D56B5'); band(cx - 200 * k, cy + 1300 * k, 1000 * k, 1250 * k, '#F4F1E8');
+  ctx.strokeStyle = 'rgba(10,20,40,.35)'; ctx.lineWidth = 5 * Math.max(k, 0.6);
+  for (const [ox, oy, r] of [[-1500, -200, 1180], [-1500, -200, 1420], [300, -1500, 1150], [300, -1500, 1390]]) { ctx.beginPath(); ctx.arc(cx + ox * k, cy + oy * k, r * k, 0, Math.PI * 2); ctx.stroke(); }
+  const g = ctx.createRadialGradient(cx - 300 * k, cy - 400 * k, 50 * k, cx, cy, R); g.addColorStop(0, 'rgba(255,255,255,.25)'); g.addColorStop(1, 'rgba(0,0,0,.35)');
+  ctx.fillStyle = g; ctx.fillRect(cx - R, cy - R, 2 * R, 2 * R); ctx.restore();
+}
+function paintBall(ctx) { ctx.fillStyle = '#0E2147'; ctx.fillRect(0, 0, BW, BH); ballAt(ctx, 1880, 1120, 760); noiseLayer(ctx, 0.12, 2, 90, 170); }
+// newspaper / match programme
+const INK_N = '#141414', RED = '#C8262B';
+function paintNews(ctx) {
+  paperBase(ctx, '#ECE6D8');
+  ctx.fillStyle = 'rgba(0,0,0,.04)'; ctx.fillRect(BW / 2 - 1, 0, 2, BH);                 // the fold
+  ctx.fillStyle = INK_N; ctx.fillRect(60, 150, BW - 120, 5); ctx.fillRect(60, 162, BW - 120, 2);
+}
+function newsMasthead(ctx, big) {
+  ctx.fillStyle = INK_N; ctx.textBaseline = 'alphabetic';
+  if (big) {
+    ctx.font = `900 150px ${F.display}`; ctx.textAlign = 'center'; ctx.fillText('THE INTRAS TIMES', BW / 2, 200);
+    ctx.fillRect(60, 232, BW - 120, 5); ctx.fillRect(60, 244, BW - 120, 2); ctx.fillRect(60, 300, BW - 120, 2);
+    ctx.font = `600 30px ${F.cond}`; spacing(ctx, 4);
+    ctx.textAlign = 'left'; ctx.fillText('SPECIAL AUCTION EDITION', 60, 286);
+    ctx.textAlign = 'right'; ctx.fillText(S.settings.date.toUpperCase(), BW - 60, 286); spacing(ctx, 0);
+  } else {
+    ctx.font = `900 76px ${F.display}`; ctx.textAlign = 'left'; ctx.fillText('THE INTRAS TIMES', 60, 128);
+    ctx.font = `600 26px ${F.cond}`; spacing(ctx, 4); ctx.textAlign = 'right';
+    ctx.fillText([S.settings.event.toUpperCase(), S.settings.date.toUpperCase()].filter(Boolean).join('  ·  '), BW - 60, 124); spacing(ctx, 0);
+  }
+  ctx.textAlign = 'left';
+}
+const _gray = new WeakMap();
+function grayOf(img) {
+  if (_gray.has(img)) return _gray.get(img);
+  const c = document.createElement('canvas'); c.width = img.width; c.height = img.height;
+  const x = c.getContext('2d'); x.drawImage(img, 0, 0);
+  try {
+    const d = x.getImageData(0, 0, c.width, c.height), a = d.data;
+    for (let i = 0; i < a.length; i += 4) { let v = 0.3 * a[i] + 0.59 * a[i + 1] + 0.11 * a[i + 2]; v = Math.max(0, Math.min(255, (v - 128) * 1.18 + 128)); a[i] = v; a[i + 1] = v * 0.98; a[i + 2] = v * 0.94; }
+    x.putImageData(d, 0, 0);
+  } catch (e) {}
+  _gray.set(img, c); return c;
+}
+// LED scoreboard
+const LED = '#FFB21E';
+let _ledOff = null;
+function ledGrid(ctx, x, y, w, h, cell) {
+  if (!_ledOff) { const c = document.createElement('canvas'); c.width = c.height = 10; const g = c.getContext('2d'); g.fillStyle = 'rgba(255,178,30,0.10)'; g.beginPath(); g.arc(5, 5, 3.2, 0, Math.PI * 2); g.fill(); _ledOff = c; }
+  ctx.save(); ctx.beginPath(); ctx.rect(x, y, w, h); ctx.clip(); ctx.fillStyle = ctx.createPattern(_ledOff, 'repeat'); ctx.fillRect(x, y, w, h); ctx.restore();
+}
+function boardFrame(ctx, x, y, w, h) {
+  ctx.fillStyle = '#1A1D22'; roundRect(ctx, x - 18, y - 18, w + 36, h + 36, 18); ctx.fill();
+  ctx.fillStyle = '#050608'; ctx.fillRect(x, y, w, h); ledGrid(ctx, x, y, w, h, 10);
+}
+function paintBoard(ctx) {
+  ctx.fillStyle = '#0B0D10'; ctx.fillRect(0, 0, BW, BH); noiseLayer(ctx, 0.1, 6, 90, 170);
+  boardFrame(ctx, 830, 60, 1030, 960);
+}
+function dotLines(ctx, block, x, top, font, color, cell, align) {
+  const W = Math.ceil(BW / cell), H = Math.ceil(BH / cell);
+  const c = document.createElement('canvas'); c.width = W; c.height = H; const g = c.getContext('2d');
+  g.scale(1 / cell, 1 / cell); g.font = font(block.size); g.fillStyle = '#fff'; g.textBaseline = 'top'; g.textAlign = align || 'left';
+  block.lines.forEach((l, i) => g.fillText(l, x, top + i * block.size * block.lh));
+  const d = g.getImageData(0, 0, W, H).data;
+  ctx.save(); ctx.fillStyle = color; ctx.shadowColor = color; ctx.shadowBlur = 10 * zoom(ctx); ctx.beginPath();
+  for (let j = 0; j < H; j++) for (let i = 0; i < W; i++) if (d[(j * W + i) * 4 + 3] > 100) { const cx = i * cell + cell / 2, cy = j * cell + cell / 2; ctx.moveTo(cx + cell * 0.38, cy); ctx.arc(cx, cy, cell * 0.38, 0, Math.PI * 2); }
+  ctx.fill(); ctx.restore();
+}
+
+// accent: null means the accent colour picked in settings
+const STYLES = {
+  sheet: { label: 'Line-up sheet', paint: paintSheet, photo: 'polaroid', X: 880, XW: 920, ey: 100, ny: 160, nameH: 360, ink: '#16243A', muted: 'rgba(40,70,110,0.8)', mutedHex: '486E9E', accent: '#C8262B', shadow: null },
+  court: { label: 'Indoor court', paint: paintPlayerBg, photo: 'left', edge: '#F4F1E8', ink: '#FFFFFF', muted: 'rgba(255,236,224,0.82)', mutedHex: 'FFE6D6', accent: null, shadow: 'rgba(35,8,0,0.45)' },
+  net: { label: 'Under the net', paint: paintUnderNet, photo: 'left', ink: '#FFFFFF', muted: 'rgba(200,212,235,0.85)', mutedHex: 'C8D4EB', accent: null, ey: 262, ny: 310, nameH: 300, bottom: 960, shadow: null },
+  wood: { label: 'Wooden sports hall', paint: paintWood, photo: 'left', edge: '#F7F3EA', ink: '#22160C', muted: 'rgba(50,30,12,0.78)', mutedHex: '5A4330', accent: '#173468', eyebrow: '#F2C230', XW: 800, shadow: null },
+  beach: { label: 'Beach sand', paint: paintBeach, photo: 'left', edge: '#1F5FB8', edgeW: 20, ink: '#1E2A38', muted: 'rgba(40,40,40,0.72)', mutedHex: '555555', accent: '#1F5FB8', shadow: null },
+  ball: { label: 'Volleyball panels', paint: paintBall, photo: 'left', edge: null, ink: '#FFFFFF', muted: 'rgba(200,212,235,0.9)', mutedHex: 'C8D4EB', accent: null, shadow: 'rgba(0,10,30,0.8)' },
+  news: { label: 'The Intras Times (newspaper)', paint: paintNews, overlay: ctx => newsMasthead(ctx, false), photo: 'box', box: [60, 200, 660, 820], gray: true, X: 800, XW: 1060, ey: 222, ny: 268, nameH: 340, bottom: 990, ink: INK_N, muted: 'rgba(20,20,20,0.62)', mutedHex: '5E5E5E', accent: RED, shadow: null },
+  board: { label: 'LED scoreboard', paint: paintBoard, photo: 'box', box: [60, 60, 700, 960], X: 900, XW: 900, ey: 132, ny: 196, nameH: 330, bottom: 960, led: true, ink: '#FFFFFF', muted: 'rgba(255,255,255,0.62)', mutedHex: 'A0A0A0', accent: LED, shadow: null },
+};
+const STYLE_KEYS = Object.keys(STYLES);
+function styleOf(sl) { return STYLES[sl.style] || STYLES.sheet; }
+function stAccent(st, accent) { return st.accent || accent; }
+
+const NAME_FONT = s => `800 ${s}px ${F.display}`;
+const EXP_FONT = s => `500 ${s}px ${F.body}`;
+const X0 = 860, XW = 940;
+function layoutPlayer(ctx, sl, showPhone) {
+  const st = styleOf(sl), p = sl.p, X = st.X || X0, W = st.XW || XW;
+  let y = st.ny || 232;
+  const name = fit(ctx, p.name.toUpperCase(), NAME_FONT, W, st.nameH || 330, 196, 84, 0.92, 3);
+  name.top = y; y += name.lines.length * name.size * name.lh + 6;
+  const rule = { top: y + 26 }; y += 26 + 8 + 44;
+  const phone = showPhone && p.phone ? p.phone : '';
+  const bottom = phone ? 890 : (st.bottom || 975);
+  let extra = null;
+  if (p.extra) {
+    const label = (S.map.extra || 'Info').toUpperCase();
+    const block = fit(ctx, p.extra, EXP_FONT, W, 110, 46, 30, 1.25, 2);
+    extra = { label, labelTop: y, block, top: y + 44 };
+    y = extra.top + block.lines.length * block.size * block.lh + 30;
+  }
+  const exp = fit(ctx, p.experience || '—', EXP_FONT, W, Math.max(80, bottom - y - 46), 60, 28, 1.28);
+  return { X, W, name, rule, extra, expLabelTop: y, exp, expTop: y + 46, phone, bottom };
+}
+function coverDraw(ctx, img, x, y, w, h) {
+  const sw = img.width, sh = img.height, ta = w / h;
+  let cw = sw, ch = sw / ta, cx = 0, cy = (sh - ch) * 0.3;
+  if (ch > sh) { ch = sh; cw = sh * ta; cx = (sw - cw) / 2; cy = 0; }
+  ctx.drawImage(img, cx, cy, cw, ch, x, y, w, h);
+}
+function initialsBox(ctx, p, x, y, w, h, accent, bg) {
+  ctx.fillStyle = bg; ctx.fillRect(x, y, w, h);
+  ctx.fillStyle = accent; ctx.font = `900 ${Math.round(w * 0.36)}px ${F.display}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(Core.initials(p.name), x + w / 2, y + h * 0.46); ctx.textAlign = 'left';
+}
+function photoBox(ctx, st, p, ph, accent) {
+  const [bx, by, bw, bh] = st.box;
+  if (st.led) { ctx.fillStyle = '#1A1D22'; roundRect(ctx, bx - 14, by - 14, bw + 28, bh + 28, 14); ctx.fill(); }
+  else if (st.boxFrame) { setShadow(ctx, 'rgba(0,0,0,.4)', 24); ctx.fillStyle = st.boxFrame; ctx.fillRect(bx - 16, by - 16, bw + 32, bh + 32); shadow(ctx, false); }
+  else { ctx.fillStyle = INK_N; ctx.fillRect(bx - 4, by - 4, bw + 8, bh + 8); }
+  if (ph) coverDraw(ctx, st.gray ? grayOf(ph) : ph, bx, by, bw, bh);
+  else initialsBox(ctx, p, bx, by, bw, bh, st.led ? LED : INK_N, st.led ? '#15181D' : '#CFC8B8');
+}
+function drawPlayer(ctx, sl, accent, showPhone) {
+  const p = sl.p, st = styleOf(sl), A = stAccent(st, accent);
+  ctx.drawImage(bgCanvas('player-' + sl.style, st.paint), 0, 0, BW, BH);
+  if (st.overlay) st.overlay(ctx);
+  const ph = photoFor(p);
+  if (st.photo === 'polaroid') {
+    ctx.save(); ctx.translate(POL.cx, POL.cy); ctx.rotate(POL.rot);
+    if (ph) coverDraw(ctx, ph, POL.px, POL.py, POL.pw, POL.ph); else initialsBox(ctx, p, POL.px, POL.py, POL.pw, POL.ph, '#16243A', '#C9D6E6');
+    ctx.fillStyle = 'rgba(230,215,170,.78)'; ctx.fillRect(-90, -POL.fh / 2 - 30, 180, 60);
+    ctx.restore();
+  } else if (st.photo === 'box') photoBox(ctx, st, p, ph, A);
+  else {
+    if (ph) ctx.drawImage(ph, 0, 0, COURT_X, BH); else initialsBox(ctx, p, 0, 0, COURT_X, BH, A, C.blueDeep);
+    if (st.edge !== null) { ctx.fillStyle = st.edge || A; ctx.fillRect(COURT_X, 0, st.edgeW || 13, BH); }
+  }
+  const L = layoutPlayer(ctx, sl, showPhone), X = L.X;
+  ctx.font = `600 40px ${F.cond}`; spacing(ctx, 5); ctx.fillStyle = st.eyebrow || A; ctx.textBaseline = 'middle';
+  ctx.fillText([sl.label.toUpperCase(), p.cohort.toUpperCase()].filter(Boolean).join('  ·  '), X, st.ey || 89);
+  spacing(ctx, 0);
+  if (st.shadow) setShadow(ctx, st.shadow);
+  if (st.led) dotLines(ctx, L.name, X, L.name.top, NAME_FONT, LED, 7);
+  else drawLines(ctx, L.name, X, L.name.top, NAME_FONT, st.ink);
+  ctx.fillStyle = A; ctx.fillRect(X, L.rule.top, 120, 8);
+  const label = (t, y) => { ctx.font = `600 30px ${F.cond}`; spacing(ctx, 5); ctx.fillStyle = st.muted; ctx.textBaseline = 'top'; ctx.fillText(t, X, y); spacing(ctx, 0); };
+  if (L.extra) { label(L.extra.label, L.extra.labelTop); drawLines(ctx, L.extra.block, X, L.extra.top, EXP_FONT, st.ink); }
+  label('EXPERIENCE', L.expLabelTop);
+  drawLines(ctx, L.exp, X, L.expTop, EXP_FONT, p.experience ? st.ink : st.muted);
+  if (L.phone) {
+    label('PHONE', 920);
+    ctx.font = `600 30px ${F.cond}`; spacing(ctx, 5); const lw = ctx.measureText('PHONE').width;
+    ctx.font = `700 52px ${F.cond}`; spacing(ctx, 2); ctx.fillStyle = st.ink; ctx.textBaseline = 'top'; ctx.fillText(L.phone, X + lw + 28, 908); spacing(ctx, 0);
+  }
+  shadow(ctx, false);
+  if (!st.overlay) { ctx.font = `600 28px ${F.cond}`; spacing(ctx, 4); ctx.fillStyle = st.muted; ctx.textBaseline = 'alphabetic'; ctx.fillText(S.settings.event.toUpperCase(), X, st.led ? 1000 : 1050); spacing(ctx, 0); }
+}
+
+function titleParts(sl) {
+  const c = sl.counts, parts = [];
+  const word = { F: ' GIRLS', M: ' BOYS', U: ' UNSORTED' };
+  groupOrder().forEach(g => { if (c[g]) parts.push(c[g] + word[g]); });
+  return parts.join('   ·   ');
+}
+function drawTitle(ctx, sl, accent) {
+  ctx.drawImage(bgCanvas('title', paintTitleBg), 0, 0, BW, BH);
+  ctx.font = `600 44px ${F.cond}`; spacing(ctx, 8); ctx.fillStyle = accent; ctx.textBaseline = 'top';
+  ctx.fillText(['PLAYER AUCTION', S.settings.date.toUpperCase()].filter(Boolean).join('  ·  '), 120, 250);
+  spacing(ctx, 0);
+  const f = s => `900 ${s}px ${F.display}`;
+  const t = fit(ctx, (S.settings.event || 'Player Auction').toUpperCase(), f, 1300, 480, 230, 96, 0.9, 3);
+  shadow(ctx, true); drawLines(ctx, t, 120, 330, f, C.ink); shadow(ctx, false);
+  const y = 330 + t.lines.length * t.size * 0.9 + 50;
+  ctx.fillStyle = accent; ctx.fillRect(120, y, 160, 10);
+  ctx.font = `700 56px ${F.cond}`; spacing(ctx, 6); ctx.fillStyle = C.ink; ctx.textBaseline = 'top';
+  shadow(ctx, true); ctx.fillText(titleParts(sl), 120, y + 44); shadow(ctx, false); spacing(ctx, 0);
+}
+function drawSection(ctx, sl, accent) {
+  ctx.drawImage(bgCanvas('sectionBack', paintSectionBack), 0, 0, BW, BH);
+  const f = s => `900 ${s}px ${F.display}`;
+  const t = fit(ctx, sl.label.toUpperCase(), f, 1600, 520, 520, 160, 1, 1);
+  ctx.font = f(t.size); ctx.fillStyle = accent; ctx.textBaseline = 'alphabetic'; ctx.textAlign = 'center';
+  ctx.fillText(t.lines[0], BW / 2, 760);                                   // the name of the group, seen through the net
+  ctx.textAlign = 'left';
+  ctx.drawImage(bgCanvas('net', paintNet), 0, 0, BW, BH);
+  ctx.font = `700 60px ${F.cond}`; spacing(ctx, 6); ctx.fillStyle = C.ink; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  shadow(ctx, true); ctx.fillText(`${sl.count} PLAYER${sl.count === 1 ? '' : 'S'}`, BW / 2, 985); shadow(ctx, false);
+  ctx.textAlign = 'left'; spacing(ctx, 0);
+}
+// captains slide: the court seen across its width, header in the free zone
+const CAP_LINE = 212;
+function paintCaptainsBg(ctx) {
+  ctx.fillStyle = C.blue; ctx.fillRect(0, 0, BW, BH);
+  const L = 64, R = BW - 64;
+  ctx.fillStyle = C.orange; ctx.fillRect(L, CAP_LINE, R - L, BH - CAP_LINE);
+  lineRect(ctx, L, CAP_LINE, R - L, 13); lineRect(ctx, L, CAP_LINE, 13, BH - CAP_LINE); lineRect(ctx, R - 13, CAP_LINE, 13, BH - CAP_LINE);
+  floorFinish(ctx, BW / 2, 520);
+}
+const PH_RATIO = 1069 / 760;
+function captainsLayout(n, topLine) {
+  const T = topLine || CAP_LINE;
+  const rows = n > 5 ? 2 : 1, cols = Math.ceil(n / rows), gap = 56, rowGap = 36, textH = 150;
+  const availW = BW - 300, availH = BH - T - 90;
+  let w = Math.min(330, (availW - gap * (cols - 1)) / cols);
+  const hFor = w => rows * (w * PH_RATIO + textH) + (rows - 1) * rowGap;
+  while (hFor(w) > availH && w > 100) w -= 4;
+  const h = w * PH_RATIO, top = T + 50 + (availH - hFor(w)) / 2;
+  const cards = [];
+  for (let i = 0; i < n; i++) {
+    const r = Math.floor(i / cols), c = i - r * cols;
+    const cnt = r === rows - 1 ? n - cols * (rows - 1) : cols;
+    const rowW = cnt * w + (cnt - 1) * gap;
+    cards.push({ x: (BW - rowW) / 2 + c * (w + gap), y: top + r * (h + textH + rowGap) });
+  }
+  return { w, h, cards };
+}
+function capHeading(sl) { return sl.g === 'M' ? "MEET THE BOYS' CAPTAINS" : sl.g === 'F' ? "MEET THE GIRLS' CAPTAINS" : 'MEET YOUR CAPTAINS'; }
+const CAP_NAME_FONT = s => `800 ${s}px ${F.display}`;
+function captainPhoto(cap) {
+  if (cap.canvas) return cap.canvas;
+  const key = cap.name.toLowerCase().replace(/[^a-z0-9]/g, '');
+  const p = key && players.find(x => x.name.toLowerCase().replace(/[^a-z0-9]/g, '') === key);
+  return p ? photoFor(p) : null;
+}
+// one name size for every card, set by the longest name
+function capNameSize(ctx, caps, w) {
+  return Math.min(...caps.map(c => fit(ctx, c.name.trim().toUpperCase(), CAP_NAME_FONT, w + 40, 70, 64, 26, 1, 1).size));
+}
+function drawCaptains(ctx, sl, accent) {
+  ctx.drawImage(bgCanvas('captains', paintCaptainsBg), 0, 0, BW, BH);
+  const f = s => `900 ${s}px ${F.display}`;
+  const t = fit(ctx, capHeading(sl), f, 1700, 150, 136, 70, 1, 1);
+  ctx.font = f(t.size); ctx.fillStyle = C.ink; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  shadow(ctx, true); ctx.fillText(t.lines[0], BW / 2, CAP_LINE / 2 + 4); shadow(ctx, false);
+  const Lc = captainsLayout(sl.caps.length);
+  const nameSize = capNameSize(ctx, sl.caps, Lc.w);
+  sl.caps.forEach((cap, i) => {
+    const { x, y } = Lc.cards[i];
+    ctx.fillStyle = C.line; ctx.fillRect(x - 8, y - 8, Lc.w + 16, Lc.h + 16);
+    const img = captainPhoto(cap);
+    if (img) ctx.drawImage(img, x, y, Lc.w, Lc.h);
+    else {
+      ctx.fillStyle = C.blueDeep; ctx.fillRect(x, y, Lc.w, Lc.h);
+      ctx.fillStyle = accent; ctx.font = `900 ${Math.round(Lc.w * 0.42)}px ${F.display}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(Core.initials(cap.name), x + Lc.w / 2, y + Lc.h / 2);
+    }
+    const nm = fit(ctx, cap.name.trim().toUpperCase(), CAP_NAME_FONT, Lc.w + 40, 70, nameSize, 26, 1, 1);
+    ctx.font = CAP_NAME_FONT(nm.size); ctx.fillStyle = C.ink; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+    shadow(ctx, true); ctx.fillText(nm.lines[0], x + Lc.w / 2, y + Lc.h + 24); shadow(ctx, false);
+    if (cap.team.trim()) {
+      const tt = cap.team.trim().toUpperCase();
+      ctx.font = `700 30px ${F.cond}`; spacing(ctx, 3);
+      let tw = ctx.measureText(tt).width; const maxW = Lc.w + 40;
+      if (tw + 32 > maxW) { const sc = (maxW - 32) / tw; ctx.font = `700 ${Math.floor(30 * sc)}px ${F.cond}`; tw = ctx.measureText(tt).width; }
+      const py = y + Lc.h + 24 + nm.size + 16;
+      ctx.fillStyle = accent; roundRect(ctx, x + Lc.w / 2 - tw / 2 - 16, py, tw + 32, 46, 8); ctx.fill();
+      ctx.fillStyle = C.bg; ctx.textBaseline = 'middle'; ctx.fillText(tt, x + Lc.w / 2, py + 24);
+      spacing(ctx, 0);
+    }
+    ctx.textAlign = 'left';
+  });
+}
+/* ---- themes: every slide of the deck dressed the same way ---- */
+function introTitle(ctx, sl, o) {
+  const x = o.x || 120;
+  ctx.font = `600 44px ${F.cond}`; spacing(ctx, 8); ctx.fillStyle = o.eyebrow; ctx.textBaseline = 'top';
+  ctx.fillText(o.kicker || ['PLAYER AUCTION', S.settings.date.toUpperCase()].filter(Boolean).join('  ·  '), x, o.ey || 250); spacing(ctx, 0);
+  const f = s => `900 ${s}px ${F.display}`;
+  const t = fit(ctx, (S.settings.event || 'Player Auction').toUpperCase(), f, o.maxW || 1300, o.maxH || 480, o.max || 230, 90, 0.9, 3);
+  const ty = o.ty || 330;
+  if (o.led) dotLines(ctx, t, x, ty, f, LED, o.cell || 10);
+  else { if (o.shadow) setShadow(ctx, o.shadow); drawLines(ctx, t, x, ty, f, o.ink); shadow(ctx, false); }
+  const y = ty + t.lines.length * t.size * 0.9 + 50;
+  ctx.fillStyle = o.rule; ctx.fillRect(x, y, 160, 10);
+  ctx.font = `700 56px ${F.cond}`; spacing(ctx, 6); ctx.fillStyle = o.countInk || o.ink; ctx.textBaseline = 'top';
+  if (o.shadow) setShadow(ctx, o.shadow);
+  ctx.fillText(titleParts(sl), x, y + 44); shadow(ctx, false); spacing(ctx, 0);
+}
+function introSection(ctx, sl, o) {
+  const f = s => `900 ${s}px ${F.display}`;
+  const left = o.align === 'left', x = left ? (o.x || 120) : BW / 2;
+  const t = fit(ctx, sl.label.toUpperCase(), f, o.maxW || 1600, o.maxH || 520, o.max || 480, 160, 1, 1);
+  const by = o.by || 720;
+  if (o.led) dotLines(ctx, t, x, by - t.size * 0.86, f, LED, o.cell || 16, left ? 'left' : 'center');
+  else {
+    ctx.font = f(t.size); ctx.textAlign = left ? 'left' : 'center'; ctx.textBaseline = 'alphabetic';
+    if (o.engrave) { ctx.fillStyle = 'rgba(255,250,235,.55)'; ctx.fillText(t.lines[0], x + 5, by + 5); }
+    if (o.shadow) setShadow(ctx, o.shadow);
+    ctx.fillStyle = o.ink; ctx.fillText(t.lines[0], x, by); shadow(ctx, false);
+  }
+  ctx.font = f(t.size); const tw = ctx.measureText(t.lines[0]).width;
+  if (o.after) o.after(ctx, left ? x : x - tw / 2, tw);
+  ctx.font = `700 60px ${F.cond}`; spacing(ctx, 6); ctx.fillStyle = o.countInk; ctx.textAlign = left ? 'left' : 'center'; ctx.textBaseline = 'alphabetic';
+  if (o.shadow) setShadow(ctx, o.shadow);
+  ctx.fillText(`${sl.count} PLAYER${sl.count === 1 ? '' : 'S'}`, x, o.cy || 850); shadow(ctx, false);
+  spacing(ctx, 0); ctx.textAlign = 'left';
+}
+function introCaptains(ctx, sl, o) {
+  const f = s => `900 ${s}px ${F.display}`;
+  const t = fit(ctx, capHeading(sl), f, 1700, 150, o.hmax || 136, 70, 1, 1);
+  const hy = o.hy || 106;
+  if (o.led) dotLines(ctx, t, BW / 2, hy - t.size / 2, f, LED, 8, 'center');
+  else { ctx.font = f(t.size); ctx.fillStyle = o.headInk; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; if (o.shadow) setShadow(ctx, o.shadow); ctx.fillText(t.lines[0], BW / 2, hy); shadow(ctx, false); ctx.textAlign = 'left'; }
+  const Lc = captainsLayout(sl.caps.length, o.top);
+  const nameSize = capNameSize(ctx, sl.caps, Lc.w);
+  sl.caps.forEach((cap, i) => {
+    const { x, y } = Lc.cards[i], img = captainPhoto(cap);
+    ctx.save();
+    if (o.card === 'polaroid') {
+      ctx.translate(x + Lc.w / 2, y + Lc.h / 2); ctx.rotate(i % 2 ? 0.03 : -0.025); ctx.translate(-(x + Lc.w / 2), -(y + Lc.h / 2));
+      setShadow(ctx, 'rgba(0,0,0,.3)', 20); ctx.fillStyle = '#fff'; ctx.fillRect(x - 14, y - 14, Lc.w + 28, Lc.h + 28); shadow(ctx, false);
+    } else if (o.card === 'news') { ctx.fillStyle = INK_N; ctx.fillRect(x - 4, y - 4, Lc.w + 8, Lc.h + 8); }
+    else if (o.card === 'pinned') { ctx.fillStyle = o.frame || '#fff'; ctx.fillRect(x - 10, y - 10, Lc.w + 20, Lc.h + 20); }
+    else if (o.card === 'board') { ctx.fillStyle = '#1A1D22'; roundRect(ctx, x - 12, y - 12, Lc.w + 24, Lc.h + 24, 12); ctx.fill(); }
+    else { ctx.fillStyle = o.frame || C.line; ctx.fillRect(x - 8, y - 8, Lc.w + 16, Lc.h + 16); }
+    if (img) ctx.drawImage(o.gray ? grayOf(img) : img, x, y, Lc.w, Lc.h);
+    else initialsBox(ctx, { name: cap.name }, x, y, Lc.w, Lc.h, o.initInk || '#fff', o.initBg || C.blueDeep);
+    if (o.card === 'polaroid') { ctx.fillStyle = 'rgba(230,215,170,.8)'; ctx.fillRect(x + Lc.w / 2 - 60, y - 34, 120, 40); }
+    if (o.card === 'pinned') magnet(ctx, x + Lc.w / 2, y - 6, i % 2 ? '#1E5BD6' : '#E53935');
+    ctx.restore();
+    const nm = fit(ctx, cap.name.trim().toUpperCase(), CAP_NAME_FONT, Lc.w + 40, 70, nameSize, 26, 1, 1);
+    const ny = y + Lc.h + (o.card === 'polaroid' ? 34 : 24);
+    ctx.font = CAP_NAME_FONT(nm.size); ctx.fillStyle = o.nameInk; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+    if (o.shadow) setShadow(ctx, o.shadow); ctx.fillText(nm.lines[0], x + Lc.w / 2, ny); shadow(ctx, false);
+    const tt = cap.team.trim().toUpperCase();
+    if (tt) {
+      ctx.font = `700 30px ${F.cond}`; spacing(ctx, 3);
+      let tw = ctx.measureText(tt).width; const maxW = Lc.w + 40;
+      if (tw + 32 > maxW) { ctx.font = `700 ${Math.floor(30 * (maxW - 32) / tw)}px ${F.cond}`; tw = ctx.measureText(tt).width; }
+      const py = ny + nm.size + 16;
+      if (o.teamBg) { ctx.fillStyle = o.teamBg; roundRect(ctx, x + Lc.w / 2 - tw / 2 - 16, py, tw + 32, 46, 8); ctx.fill(); }
+      ctx.fillStyle = o.teamInk; ctx.textBaseline = 'middle'; ctx.fillText(tt, x + Lc.w / 2, py + 24);
+      spacing(ctx, 0);
+    }
+    ctx.textAlign = 'left';
+  });
+}
+function stamp(ctx, text, x, y, rot, col) {
+  ctx.save(); ctx.translate(x, y); ctx.rotate(rot); ctx.globalAlpha = 0.85; ctx.strokeStyle = col; ctx.fillStyle = col;
+  ctx.font = `700 46px ${F.cond}`; spacing(ctx, 6); const w = ctx.measureText(text).width + 64;
+  ctx.lineWidth = 6; roundRect(ctx, -w / 2, -44, w, 88, 10); ctx.stroke(); ctx.lineWidth = 2; roundRect(ctx, -w / 2 + 9, -35, w - 18, 70, 6); ctx.stroke();
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(text, 0, 3); spacing(ctx, 0); ctx.restore();
+}
+function marker(ctx, x, y, w, col) {
+  ctx.save(); ctx.strokeStyle = col; ctx.lineWidth = 18; ctx.lineCap = 'round'; ctx.globalAlpha = 0.88; ctx.beginPath(); ctx.moveTo(x, y);
+  for (let i = 1; i <= 14; i++) ctx.lineTo(x + w * i / 14, y + Math.sin(i * 1.3) * 5 - i * 0.8); ctx.stroke(); ctx.restore();
+}
+const bgDraw = (ctx, key, paint) => ctx.drawImage(bgCanvas(key, paint), 0, 0, BW, BH);
+const PAINT = {
+  sheetT: c => { paperBase(c, '#F2EDE1'); ruled(c, 0, BW, 60, BH, 60); c.fillStyle = 'rgba(200,38,43,.35)'; c.fillRect(110, 0, 2, BH); sheetHeader(c, 'OFFICIAL LINE-UP SHEET', 'SET  1  2  3  4  5', 160, 1860); },
+  boardT: c => { c.fillStyle = '#0B0D10'; c.fillRect(0, 0, BW, BH); noiseLayer(c, 0.1, 6, 90, 170); boardFrame(c, 80, 80, BW - 160, BH - 160); },
+};
+
+const THEMES = {
+  sheet: {
+    title(ctx, sl) {
+      bgDraw(ctx, 'sheetT', PAINT.sheetT);
+      introTitle(ctx, sl, { x: 170, ink: '#16243A', eyebrow: RED, rule: RED, countInk: '#16243A' });
+      stamp(ctx, 'AUCTION DAY', 1560, 860, -0.12, RED);
+    },
+    captains(ctx, sl) {
+      const title = sl.label ? `TEAM CAPTAINS · ${sl.label.toUpperCase()}` : 'TEAM CAPTAINS';
+      bgDraw(ctx, 'sheetC_' + (sl.g || 'all'), c => { paperBase(c, '#F2EDE1'); ruled(c, 0, BW, 60, BH, 60); sheetHeader(c, title, 'OFFICIAL LINE-UP SHEET', 60, 1860); });
+      introCaptains(ctx, sl, { headInk: '#16243A', hy: 128, top: 222, card: 'polaroid', nameInk: '#16243A', teamInk: RED, initBg: '#C9D6E6', initInk: '#16243A' });
+    },
+    section(ctx, sl) {
+      bgDraw(ctx, 'sheetT', PAINT.sheetT);
+      introSection(ctx, sl, { ink: '#16243A', countInk: RED, by: 660, cy: 900, max: 440, after: (c, x, w) => marker(c, x + 10, 730, w - 20, RED) });
+    },
+  },
+  court: { title: (ctx, sl, a) => drawTitle(ctx, sl, a), captains: (ctx, sl, a) => drawCaptains(ctx, sl, a), section: (ctx, sl, a) => drawSection(ctx, sl, a) },
+  net: {
+    title(ctx, sl, a) {
+      bgDraw(ctx, 'netT', c => { paintHall(c); netBand(c, 0, 230); hallFloor(c, 0, 990); });
+      introTitle(ctx, sl, { ink: '#fff', eyebrow: a, rule: a, ey: 330, ty: 400, maxH: 400, max: 200 });
+    },
+    captains(ctx, sl, a) {
+      bgDraw(ctx, 'netC', c => { paintHall(c); netBand(c, 0, 110); hallFloor(c, 0, 1040); });
+      introCaptains(ctx, sl, { headInk: '#fff', hy: 205, top: 270, nameInk: '#fff', teamBg: a, teamInk: C.bg, frame: '#F2F2EF' });
+    },
+    section: (ctx, sl, a) => drawSection(ctx, sl, a),
+  },
+  wood: {
+    title(ctx, sl) {
+      bgDraw(ctx, 'woodT', c => { paintWoodBase(c); c.fillStyle = '#F7F3EA'; c.fillRect(0, 960, BW, 12); c.fillStyle = '#F2C230'; c.fillRect(1640, 0, 12, BH); c.fillStyle = 'rgba(23,52,104,.94)'; c.fillRect(0, 972, BW, BH); darkEdges(c, 0.35); });
+      introTitle(ctx, sl, { ink: '#22160C', eyebrow: '#173468', rule: '#173468', countInk: '#22160C', ey: 200, ty: 280, maxH: 440 });
+    },
+    captains(ctx, sl) {
+      bgDraw(ctx, 'woodC', c => { paintWoodBase(c); c.fillStyle = 'rgba(23,52,104,.94)'; c.fillRect(0, 0, BW, 200); c.fillStyle = '#F7F3EA'; c.fillRect(0, 200, BW, 12); darkEdges(c, 0.3); });
+      introCaptains(ctx, sl, { headInk: '#fff', hy: 104, top: 222, nameInk: '#22160C', teamBg: '#173468', teamInk: '#fff', frame: '#F7F3EA' });
+    },
+    section(ctx, sl) {
+      bgDraw(ctx, 'woodS', c => { paintWoodBase(c); c.fillStyle = '#F7F3EA'; c.fillRect(0, 780, BW, 12); darkEdges(c, 0.35); });
+      introSection(ctx, sl, { ink: 'rgba(247,243,234,0.93)', countInk: '#173468', by: 700, cy: 900 });
+    },
+  },
+  beach: {
+    title(ctx, sl) {
+      bgDraw(ctx, 'beachT', c => { paintSandBase(c); sandTape(c, 0, 900, 1520, 24); sandTape(c, 1520, 900, 24, BH); darkEdges(c, 0.25); });
+      introTitle(ctx, sl, { ink: '#1E2A38', eyebrow: '#1F5FB8', rule: '#1F5FB8', countInk: '#1E2A38', ey: 180, ty: 260, maxH: 440 });
+    },
+    captains(ctx, sl) {
+      bgDraw(ctx, 'beachC', c => { paintSandBase(c); sandTape(c, 0, 200, BW, 22); darkEdges(c, 0.25); });
+      introCaptains(ctx, sl, { headInk: '#1E2A38', hy: 104, top: 222, nameInk: '#1E2A38', teamBg: '#1F5FB8', teamInk: '#fff', frame: '#fff' });
+    },
+    section(ctx, sl) {
+      bgDraw(ctx, 'beachS', c => { paintSandBase(c); sandTape(c, 0, 790, BW, 22); darkEdges(c, 0.25); });
+      introSection(ctx, sl, { ink: 'rgba(120,82,38,0.62)', engrave: true, countInk: '#1F5FB8', by: 700, cy: 930 });
+    },
+  },
+  ball: {
+    title(ctx, sl, a) {
+      bgDraw(ctx, 'ballT', c => { c.fillStyle = '#0E2147'; c.fillRect(0, 0, BW, BH); ballAt(c, 1640, 560, 560); noiseLayer(c, 0.12, 2, 90, 170); });
+      introTitle(ctx, sl, { ink: '#fff', eyebrow: a, rule: a, maxW: 1150, shadow: 'rgba(0,10,30,0.8)' });
+    },
+    captains(ctx, sl, a) {
+      bgDraw(ctx, 'ballC', c => { c.fillStyle = '#0E2147'; c.fillRect(0, 0, BW, BH); ballAt(c, 1900, 1140, 420); ballAt(c, -40, -60, 260); noiseLayer(c, 0.12, 2, 90, 170); });
+      introCaptains(ctx, sl, { headInk: '#fff', hy: 110, top: 222, nameInk: '#fff', teamBg: a, teamInk: C.bg, frame: '#F4F1E8', shadow: 'rgba(0,10,30,0.8)' });
+    },
+    section(ctx, sl, a) {
+      bgDraw(ctx, 'ballS', c => { c.fillStyle = '#0E2147'; c.fillRect(0, 0, BW, BH); ballAt(c, 1480, 560, 600); noiseLayer(c, 0.12, 2, 90, 170); });
+      introSection(ctx, sl, { align: 'left', ink: '#fff', countInk: a, by: 700, cy: 840, maxW: 1500, shadow: 'rgba(0,10,30,0.85)' });
+    },
+  },
+  news: {
+    title(ctx, sl) {
+      bgDraw(ctx, 'newsT', c => paperBase(c, '#ECE6D8'));
+      newsMasthead(ctx, true);
+      introTitle(ctx, sl, { x: 60, kicker: 'PLAYER AUCTION', ink: INK_N, eyebrow: RED, rule: RED, countInk: INK_N, ey: 360, ty: 430, maxW: 1800, maxH: 380, max: 220 });
+    },
+    captains(ctx, sl) {
+      bgDraw(ctx, 'player-news', paintNews); newsMasthead(ctx, false);
+      introCaptains(ctx, sl, { headInk: INK_N, hy: 262, top: 330, card: 'news', gray: true, nameInk: INK_N, teamInk: RED, initBg: '#CFC8B8', initInk: INK_N });
+    },
+    section(ctx, sl) {
+      bgDraw(ctx, 'player-news', paintNews); newsMasthead(ctx, false);
+      introSection(ctx, sl, { ink: INK_N, countInk: RED, by: 760, cy: 900, maxH: 480, max: 460, after: (c, x, w) => { c.fillStyle = INK_N; c.fillRect(60, 960, BW - 120, 3); } });
+    },
+  },
+  board: {
+    title(ctx, sl) {
+      bgDraw(ctx, 'boardT', PAINT.boardT);
+      introTitle(ctx, sl, { x: 160, led: true, cell: 10, ink: LED, eyebrow: '#fff', rule: LED, countInk: '#fff', ey: 180, ty: 260, maxW: 1600, maxH: 460, max: 220 });
+    },
+    captains(ctx, sl) {
+      bgDraw(ctx, 'boardC', c => { c.fillStyle = '#0B0D10'; c.fillRect(0, 0, BW, BH); noiseLayer(c, 0.1, 6, 90, 170); boardFrame(c, 100, 40, BW - 200, 140); });
+      introCaptains(ctx, sl, { led: true, maxW: 1600, hy: 110, top: 222, card: 'board', nameInk: '#fff', teamInk: LED, initBg: '#15181D', initInk: LED });
+    },
+    section(ctx, sl) {
+      bgDraw(ctx, 'boardT', PAINT.boardT);
+      introSection(ctx, sl, { led: true, cell: 16, countInk: '#fff', by: 700, cy: 880, max: 420, maxH: 460 });
+    },
+  },
+};
+function themeOf() { return THEMES[S.settings.style] ? S.settings.style : 'sheet'; }
+
+/* ---- other sports: two themes each, built from one recipe ---- */
+const THEME_SPORT = { sheet: 'any', court: 'volleyball', net: 'volleyball', wood: 'volleyball', beach: 'volleyball', ball: 'volleyball', news: 'any', board: 'any' };
+const SPORTS = { volleyball: 'Volleyball', basketball: 'Basketball', football: 'Football', tennis: 'Tennis', tabletennis: 'Table Tennis', chess: 'Chess', badminton: 'Badminton' };
+function sportTheme(o) {
+  const paintWith = d => c => { o.base(c); if (d) d(c); };
+  STYLES[o.key] = Object.assign({ label: o.label, paint: paintWith(o.deco.player), photo: 'left' }, o.player);
+  THEMES[o.key] = {
+    title(ctx, sl) { bgDraw(ctx, o.key + 'T', paintWith(o.deco.title)); if (o.titleFx) o.titleFx(ctx); introTitle(ctx, sl, Object.assign({ ink: o.ink, eyebrow: o.accent, rule: o.accent, countInk: o.ink, shadow: o.shadow }, o.title)); },
+    captains(ctx, sl) { bgDraw(ctx, o.key + 'C', paintWith(o.deco.caps)); introCaptains(ctx, sl, Object.assign({ headInk: o.ink, nameInk: o.ink, teamBg: o.accent, teamInk: o.onAccent || '#111', frame: '#F4F1E8', shadow: o.shadow, top: 222, hy: 106 }, o.caps)); },
+    section(ctx, sl) { bgDraw(ctx, o.key + 'S', paintWith(o.deco.section)); introSection(ctx, sl, Object.assign({ ink: o.ink, countInk: o.accent, shadow: o.shadow }, o.section)); },
+  };
+  THEME_SPORT[o.key] = o.sport;
+}
+function stroke(ctx, col, w, fn) { ctx.save(); ctx.strokeStyle = col; ctx.lineWidth = w; ctx.beginPath(); fn(); ctx.stroke(); ctx.restore(); }
+function planks(ctx, h, hue, sat, light, seed) {
+  const r = rng(seed); ctx.fillStyle = `hsl(${hue},${sat}%,${light}%)`; ctx.fillRect(0, 0, BW, BH);
+  for (let y = 0; y < BH; y += h) {
+    let x = -r() * 600;
+    while (x < BW) {
+      const len = 380 + r() * 620, t = r();
+      ctx.fillStyle = `hsl(${hue + t * 6},${sat + t * 10}%,${light + t * 9}%)`; ctx.fillRect(x, y, len, h);
+      ctx.strokeStyle = 'rgba(40,22,8,.18)'; ctx.lineWidth = 1.5;
+      for (let k = 0; k < 5; k++) { ctx.beginPath(); const yy = y + 5 + r() * (h - 10), ph = r() * 6; ctx.moveTo(x, yy); for (let s = 0; s <= len; s += 40) ctx.lineTo(x + s, yy + Math.sin(s / 90 + ph) * 3); ctx.stroke(); }
+      ctx.fillStyle = 'rgba(30,15,5,.35)'; ctx.fillRect(x, y, 2, h); x += len;
+    }
+    ctx.fillStyle = 'rgba(30,15,5,.3)'; ctx.fillRect(0, y, BW, 2);
+  }
+  noiseLayer(ctx, 0.12, seed, 90, 170);
+}
+
+/* basketball */
+const BB_RED = '#9E2A2B';
+function bbHalfCourt(ctx, hx, hy, k, lineCol, keyCol) {
+  // hoop at (hx,hy), court opening to the left; k = px per metre
+  const keyW = 4.9 * k, keyL = 5.8 * k, base = hx + 1.575 * k;
+  ctx.fillStyle = keyCol; ctx.fillRect(base - keyL, hy - keyW / 2, keyL, keyW);
+  stroke(ctx, lineCol, 8, () => { ctx.rect(base - keyL, hy - keyW / 2, keyL, keyW); });
+  stroke(ctx, lineCol, 8, () => { ctx.arc(base - keyL, hy, 1.8 * k, Math.PI / 2, Math.PI * 1.5); });
+  stroke(ctx, lineCol, 8, () => { ctx.setLineDash([22, 18]); ctx.arc(base - keyL, hy, 1.8 * k, -Math.PI / 2, Math.PI / 2); });
+  stroke(ctx, lineCol, 8, () => {
+    const R = 6.75 * k, a = Math.asin(6.6 * k / R);
+    ctx.moveTo(base, hy - 6.6 * k); ctx.lineTo(hx - R * Math.cos(a) + 0.0, hy - 6.6 * k);
+    ctx.arc(hx, hy, R, Math.PI + a, Math.PI - a, true); ctx.lineTo(base, hy + 6.6 * k);
+  });
+  stroke(ctx, lineCol, 8, () => { ctx.moveTo(base, hy - 7.5 * k); ctx.lineTo(base, hy + 7.5 * k); });
+  stroke(ctx, '#E86A1C', 7, () => { ctx.arc(hx, hy, 0.23 * k, 0, Math.PI * 2); });
+  stroke(ctx, '#F4F1E8', 10, () => { ctx.moveTo(hx + 0.38 * k, hy - 0.9 * k); ctx.lineTo(hx + 0.38 * k, hy + 0.9 * k); });
+}
+sportTheme({
+  key: 'bbwood', sport: 'basketball', label: 'Hardwood court', ink: '#22160C', accent: BB_RED, onAccent: '#fff', shadow: null,
+  base: c => planks(c, 40, 32, 46, 52, 31),
+  deco: {
+    player: c => { c.fillStyle = BB_RED; c.fillRect(768, 0, BW, 160); c.fillStyle = '#F7F3EA'; c.fillRect(768, 160, BW, 12); darkEdges(c, 0.3); },
+    title: c => { bbHalfCourt(c, 1760, 540, 70, '#F7F3EA', 'rgba(158,42,43,.92)'); darkEdges(c, 0.3); },
+    caps: c => { c.fillStyle = BB_RED; c.fillRect(0, 0, BW, 200); c.fillStyle = '#F7F3EA'; c.fillRect(0, 200, BW, 12); darkEdges(c, 0.3); },
+    section: c => { c.fillStyle = 'rgba(158,42,43,.28)'; c.beginPath(); c.arc(BW / 2, 560, 330, 0, Math.PI * 2); c.fill(); stroke(c, '#F7F3EA', 10, () => { c.arc(BW / 2, 560, 330, 0, Math.PI * 2); }); stroke(c, '#F7F3EA', 10, () => { c.moveTo(BW / 2, 0); c.lineTo(BW / 2, BH); }); darkEdges(c, 0.3); },
+  },
+  player: { edge: '#F7F3EA', ink: '#22160C', muted: 'rgba(50,30,12,0.78)', mutedHex: '5A4330', accent: BB_RED, eyebrow: '#FFFFFF', XW: 940 },
+  caps: { headInk: '#fff', frame: '#F7F3EA' },
+  section: { ink: '#22160C', countInk: BB_RED, by: 680, cy: 980 },
+  title: { maxW: 1000 },
+});
+function asphalt(c) {
+  c.fillStyle = '#2A2C2F'; c.fillRect(0, 0, BW, BH); noiseLayer(c, 0.7, 41, 40, 220);
+  const r = rng(77);
+  for (let i = 0; i < 2600; i++) { c.fillStyle = `rgba(${r() < 0.5 ? '200,200,200' : '0,0,0'},${0.15 + r() * 0.25})`; c.fillRect(r() * BW, r() * BH, 2 + r() * 3, 2 + r() * 3); }
+  c.strokeStyle = 'rgba(0,0,0,.45)'; c.lineWidth = 2;
+  for (let i = 0; i < 6; i++) { c.beginPath(); let x = r() * BW, y = r() * BH; c.moveTo(x, y); for (let k = 0; k < 12; k++) { x += (r() - 0.5) * 80; y += 20 + r() * 40; c.lineTo(x, y); } c.stroke(); }
+}
+function chainLink(c, x0, y0, w, h) {
+  c.save(); c.beginPath(); c.rect(x0, y0, w, h); c.clip(); c.fillStyle = 'rgba(10,10,12,.55)'; c.fillRect(x0, y0, w, h);
+  c.strokeStyle = 'rgba(190,195,200,.55)'; c.lineWidth = 3; const s = 46;
+  for (let x = x0 - h; x < x0 + w + h; x += s) { c.beginPath(); c.moveTo(x, y0); c.lineTo(x + h, y0 + h); c.stroke(); c.beginPath(); c.moveTo(x + h, y0); c.lineTo(x, y0 + h); c.stroke(); }
+  c.restore(); c.fillStyle = '#8D9196'; c.fillRect(x0, y0 + h - 8, w, 8);
+}
+const FADED = 'rgba(235,235,225,.78)';
+sportTheme({
+  key: 'bbstreet', sport: 'basketball', label: 'Streetball blacktop', ink: '#FFFFFF', accent: '#F07A2B', onAccent: '#111', shadow: 'rgba(0,0,0,.6)',
+  base: asphalt,
+  deco: {
+    player: c => { chainLink(c, 768, 0, BW, 172); stroke(c, FADED, 10, () => { c.moveTo(768, 182); c.lineTo(BW, 182); }); },
+    title: c => { chainLink(c, 0, 0, BW, 120); bbHalfCourt(c, 1780, 600, 62, FADED, 'rgba(240,122,43,.35)'); },
+    caps: c => { chainLink(c, 0, 0, BW, 200); stroke(c, FADED, 10, () => { c.moveTo(0, 210); c.lineTo(BW, 210); }); },
+    section: c => { stroke(c, FADED, 10, () => { c.arc(BW / 2, 560, 330, 0, Math.PI * 2); }); stroke(c, FADED, 10, () => { c.moveTo(BW / 2, 0); c.lineTo(BW / 2, BH); }); },
+  },
+  player: { edge: FADED, edgeW: 10, ink: '#FFFFFF', muted: 'rgba(220,220,220,0.8)', mutedHex: 'CCCCCC', accent: '#F07A2B', shadow: 'rgba(0,0,0,.6)' },
+  caps: { headInk: '#fff', hy: 104 },
+  section: { by: 680, cy: 980 },
+  title: { ey: 260, ty: 340, maxW: 1050 },
+});
+
+/* football */
+function grass(c) {
+  for (let x = 0; x < BW; x += 120) { c.fillStyle = (x / 120) % 2 ? '#2F7F35' : '#358C3B'; c.fillRect(x, 0, 120, BH); }
+  noiseLayer(c, 0.35, 51, 60, 200); glow(c, BW / 2, -100, 1300, 0.18);
+}
+const WL = '#F5F5F0';
+function penaltyArea(c, gx, cy, k) {
+  // goal line at x = gx, pitch to the left
+  stroke(c, WL, 8, () => { c.rect(gx - 16.5 * k, cy - 20.16 * k, 16.5 * k, 40.32 * k); });
+  stroke(c, WL, 8, () => { c.rect(gx - 5.5 * k, cy - 9.16 * k, 5.5 * k, 18.32 * k); });
+  stroke(c, WL, 8, () => { const a = Math.acos(5.5 / 9.15); c.arc(gx - 11 * k, cy, 9.15 * k, Math.PI - a, Math.PI + a); });
+  c.fillStyle = WL; c.beginPath(); c.arc(gx - 11 * k, cy, 7, 0, Math.PI * 2); c.fill();
+  stroke(c, WL, 8, () => { c.moveTo(gx, 0); c.lineTo(gx, BH); });
+  stroke(c, '#EDEDED', 12, () => { c.moveTo(gx + 6, cy - 3.66 * k); c.lineTo(gx + 6, cy + 3.66 * k); });
+}
+sportTheme({
+  key: 'fbpitch', sport: 'football', label: 'Match pitch', ink: '#FFFFFF', accent: '#FFD23F', onAccent: '#111', shadow: 'rgba(0,30,0,.55)',
+  base: grass,
+  deco: {
+    player: c => { stroke(c, WL, 10, () => { c.moveTo(768, 172); c.lineTo(BW, 172); }); stroke(c, WL, 8, () => { c.arc(1920, 172, 60, Math.PI / 2, Math.PI); }); darkEdges(c, 0.3); },
+    title: c => { penaltyArea(c, 1840, 540, 24); darkEdges(c, 0.3); },
+    caps: c => { stroke(c, WL, 10, () => { c.moveTo(0, 210); c.lineTo(BW, 210); }); stroke(c, WL, 8, () => { c.arc(BW / 2, 210, 230, 0, Math.PI); }); darkEdges(c, 0.3); },
+    section: c => { stroke(c, WL, 10, () => { c.arc(BW / 2, 560, 300, 0, Math.PI * 2); }); stroke(c, WL, 10, () => { c.moveTo(BW / 2, 0); c.lineTo(BW / 2, BH); }); c.fillStyle = WL; c.beginPath(); c.arc(BW / 2, 560, 12, 0, Math.PI * 2); c.fill(); darkEdges(c, 0.3); },
+  },
+  player: { edge: WL, edgeW: 10, ink: '#FFFFFF', muted: 'rgba(235,245,235,0.85)', mutedHex: 'E6F0E6', accent: '#FFD23F', shadow: 'rgba(0,30,0,.55)' },
+  caps: { frame: WL },
+  section: { by: 690, cy: 980 },
+  title: { maxW: 1200 },
+});
+function tacticsBoard(c) {
+  c.fillStyle = '#1D5A3A'; c.fillRect(0, 0, BW, BH); noiseLayer(c, 0.25, 61, 80, 180);
+  c.strokeStyle = 'rgba(240,250,240,.10)'; c.lineWidth = 30; c.beginPath(); c.moveTo(300, 900); c.bezierCurveTo(700, 700, 1100, 1000, 1600, 760); c.stroke();     // old marker, rubbed out
+  c.lineWidth = 26; c.strokeStyle = '#B9BEC4'; c.strokeRect(13, 13, BW - 26, BH - 26); c.lineWidth = 3; c.strokeStyle = '#7E848B'; c.strokeRect(26, 26, BW - 52, BH - 52);
+}
+function magnet(c, x, y, col, num) {
+  c.save(); setShadow(c, 'rgba(0,0,0,.45)', 10); c.fillStyle = col; c.beginPath(); c.arc(x, y, 30, 0, Math.PI * 2); c.fill(); c.restore();
+  c.fillStyle = 'rgba(255,255,255,.25)'; c.beginPath(); c.arc(x - 8, y - 10, 12, 0, Math.PI * 2); c.fill();
+  if (num) { c.fillStyle = '#fff'; c.font = `700 30px ${F.cond}`; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(num, x, y + 1); c.textAlign = 'left'; }
+}
+function arrow(c, pts, col) {
+  c.save(); c.strokeStyle = col; c.lineWidth = 8; c.lineCap = 'round'; c.setLineDash([24, 18]);
+  c.beginPath(); c.moveTo(pts[0], pts[1]); c.quadraticCurveTo(pts[2], pts[3], pts[4], pts[5]); c.stroke(); c.setLineDash([]);
+  const a = Math.atan2(pts[5] - pts[3], pts[4] - pts[2]); c.fillStyle = col; c.beginPath(); c.moveTo(pts[4], pts[5]);
+  c.lineTo(pts[4] - 30 * Math.cos(a - 0.45), pts[5] - 30 * Math.sin(a - 0.45)); c.lineTo(pts[4] - 30 * Math.cos(a + 0.45), pts[5] - 30 * Math.sin(a + 0.45)); c.fill(); c.restore();
+}
+const CHALK = 'rgba(240,250,240,.78)';
+sportTheme({
+  key: 'fbtactics', sport: 'football', label: 'Tactics board', ink: '#FFFFFF', accent: '#E53935', onAccent: '#fff', shadow: null,
+  base: tacticsBoard,
+  deco: {
+    player: c => { stroke(c, CHALK, 5, () => { c.rect(860, 60, 1000, 960); }); stroke(c, CHALK, 5, () => { c.arc(1860, 540, 140, Math.PI / 2, Math.PI * 1.5); }); magnet(c, 175, 70, '#E53935'); magnet(c, 655, 70, '#1E5BD6'); },
+    title: c => {
+      stroke(c, CHALK, 5, () => { c.rect(1040, 80, 800, 920); c.moveTo(1040, 540); c.lineTo(1840, 540); });
+      stroke(c, CHALK, 5, () => { c.arc(1440, 540, 110, 0, Math.PI * 2); c.moveTo(1290, 80); c.rect(1290, 80, 300, 150); c.rect(1290, 850, 300, 150); });
+      [[1440, 960, '1'], [1180, 840, '2'], [1340, 860, '4'], [1540, 860, '5'], [1700, 840, '3'], [1260, 680, '6'], [1440, 700, '8'], [1620, 680, '10'], [1200, 440, '7'], [1440, 400, '9'], [1680, 440, '11']].forEach(([x, y, n]) => magnet(c, x, y, '#E53935', n));
+      [[1300, 230], [1440, 170], [1580, 230]].forEach(([x, y]) => magnet(c, x, y, '#1E5BD6'));
+      arrow(c, [1200, 420, 1150, 280, 1290, 200], '#FFD23F'); arrow(c, [1620, 660, 1760, 560, 1680, 460], '#FFD23F');
+    },
+    caps: c => { stroke(c, CHALK, 5, () => { c.moveTo(60, 210); c.lineTo(BW - 60, 210); }); },
+    section: c => { stroke(c, CHALK, 5, () => { c.arc(BW / 2, 560, 300, 0, Math.PI * 2); c.moveTo(BW / 2, 60); c.lineTo(BW / 2, BH - 60); }); arrow(c, [560, 900, 960, 760, 1360, 900], '#FFD23F'); },
+  },
+  player: { photo: 'box', box: [90, 100, 650, 900], boxFrame: '#F4F1E8', X: 920, XW: 880, ey: 120, ny: 180, bottom: 960, ink: '#FFFFFF', muted: 'rgba(230,245,235,0.8)', mutedHex: 'D8EBDD', accent: '#FFD23F', eyebrow: '#FFD23F' },
+  caps: { headInk: '#fff', frame: '#F4F1E8', card: 'pinned' },
+  section: { by: 680, cy: 1000, countInk: '#FFD23F' },
+  title: { eyebrow: '#FFD23F', rule: '#FFD23F', maxW: 880, x: 120 },
+});
+
+/* tennis */
+const OPTIC = '#D7F45B';
+function tennisBall(c, x, y, r) {
+  c.save(); setShadow(c, 'rgba(0,0,0,.4)', 24); c.fillStyle = OPTIC; c.beginPath(); c.arc(x, y, r, 0, Math.PI * 2); c.fill(); c.restore();
+  c.save(); c.beginPath(); c.arc(x, y, r, 0, Math.PI * 2); c.clip();
+  const g = c.createRadialGradient(x - r * 0.4, y - r * 0.4, r * 0.1, x, y, r); g.addColorStop(0, 'rgba(255,255,255,.35)'); g.addColorStop(1, 'rgba(60,80,0,.35)'); c.fillStyle = g; c.fillRect(x - r, y - r, 2 * r, 2 * r);
+  const rr = rng(3); for (let i = 0; i < r * 6; i++) { c.fillStyle = `rgba(${rr() < 0.5 ? '255,255,230' : '120,140,20'},.35)`; c.fillRect(x - r + rr() * 2 * r, y - r + rr() * 2 * r, 2, 2); }
+  c.strokeStyle = '#F7F7F2'; c.lineWidth = r * 0.07; c.beginPath(); c.arc(x - r * 1.25, y, r * 0.95, -0.9, 0.9); c.stroke(); c.beginPath(); c.arc(x + r * 1.25, y, r * 0.95, Math.PI - 0.9, Math.PI + 0.9); c.stroke();
+  c.restore();
+}
+function tennisCourt(c, x, y, w, col) {
+  // 23.77 m x 10.97 m, drawn lengthwise across the slide
+  const k = w / 23.77, h = 10.97 * k, al = 1.37 * k, sv = 6.4 * k;
+  stroke(c, col, 8, () => { c.rect(x, y, w, h); c.moveTo(x, y + al); c.lineTo(x + w, y + al); c.moveTo(x, y + h - al); c.lineTo(x + w, y + h - al);
+    c.moveTo(x + w / 2 - sv, y + al); c.lineTo(x + w / 2 - sv, y + h - al); c.moveTo(x + w / 2 + sv, y + al); c.lineTo(x + w / 2 + sv, y + h - al);
+    c.moveTo(x + w / 2 - sv, y + h / 2); c.lineTo(x + w / 2 + sv, y + h / 2); });
+  c.fillStyle = 'rgba(0,0,0,.25)'; c.fillRect(x + w / 2 + 4, y - 40, 14, h + 80); c.fillStyle = '#1A1A1A'; c.fillRect(x + w / 2 - 4, y - 40, 8, h + 80);
+}
+sportTheme({
+  key: 'tnhard', sport: 'tennis', label: 'Hard court', ink: '#FFFFFF', accent: OPTIC, onAccent: '#123', shadow: 'rgba(0,15,40,.5)',
+  base: c => { c.fillStyle = '#4E8A57'; c.fillRect(0, 0, BW, BH); noiseLayer(c, 0.25, 71, 80, 180); },
+  deco: {
+    player: c => { c.fillStyle = '#2C5CA6'; c.fillRect(768, 172, BW, BH); noiseLayer(c, 0.2, 72, 80, 180); stroke(c, WL, 10, () => { c.moveTo(768, 172); c.lineTo(BW, 172); c.moveTo(1840, 172); c.lineTo(1840, BH); }); stroke(c, WL, 8, () => { c.moveTo(1700, 172); c.lineTo(1700, BH); }); darkEdges(c, 0.3); },
+    title: c => { c.fillStyle = '#2C5CA6'; c.fillRect(760, 200, 1400, 676); noiseLayer(c, 0.2, 72, 80, 180); tennisCourt(c, 760, 220, 1400, WL); tennisBall(c, 1250, 950, 70); darkEdges(c, 0.3); },
+    caps: c => { c.fillStyle = '#2C5CA6'; c.fillRect(0, 210, BW, BH); noiseLayer(c, 0.2, 72, 80, 180); stroke(c, WL, 10, () => { c.moveTo(0, 210); c.lineTo(BW, 210); }); darkEdges(c, 0.3); },
+    section: c => { c.fillStyle = '#2C5CA6'; c.fillRect(160, 0, BW - 320, BH); noiseLayer(c, 0.2, 72, 80, 180); stroke(c, WL, 10, () => { c.rect(160, -20, BW - 320, BH + 40); c.moveTo(160, 760); c.lineTo(BW - 160, 760); c.moveTo(BW / 2, 760); c.lineTo(BW / 2, BH); }); darkEdges(c, 0.3); },
+  },
+  player: { edge: WL, edgeW: 10, ink: '#FFFFFF', muted: 'rgba(225,235,250,0.85)', mutedHex: 'E1EBFA', accent: OPTIC, shadow: 'rgba(0,15,40,.5)', XW: 800 },
+  caps: { frame: WL },
+  section: { by: 690, cy: 900 },
+  title: { maxW: 1100 },
+});
+function clay(c) {
+  c.fillStyle = '#C1592F'; c.fillRect(0, 0, BW, BH); const r = rng(81);
+  for (let i = 0; i < 140; i++) { c.fillStyle = `rgba(${r() < 0.5 ? '255,200,160' : '110,40,15'},${0.04 + r() * 0.05})`; c.fillRect(0, r() * BH, BW, 2 + r() * 8); }   // drag-mat sweeps
+  noiseLayer(c, 0.45, 82, 60, 200); glow(c, 1300, 200, 1300, 0.2);
+}
+const CL = 'rgba(248,240,228,.92)';
+sportTheme({
+  key: 'tnclay', sport: 'tennis', label: 'Clay court', ink: '#FFFFFF', accent: '#F4EBD9', onAccent: '#5A2410', shadow: 'rgba(70,20,5,.5)',
+  base: clay,
+  deco: {
+    player: c => { stroke(c, CL, 12, () => { c.moveTo(768, 172); c.lineTo(BW, 172); c.moveTo(1840, 172); c.lineTo(1840, BH); }); stroke(c, CL, 9, () => { c.moveTo(1700, 172); c.lineTo(1700, BH); }); darkEdges(c, 0.3); },
+    title: c => { tennisCourt(c, 760, 220, 1400, CL); tennisBall(c, 1250, 950, 70); darkEdges(c, 0.3); },
+    caps: c => { stroke(c, CL, 12, () => { c.moveTo(0, 210); c.lineTo(BW, 210); }); darkEdges(c, 0.3); },
+    section: c => { stroke(c, CL, 12, () => { c.moveTo(0, 760); c.lineTo(BW, 760); c.moveTo(BW / 2, 760); c.lineTo(BW / 2, BH); }); darkEdges(c, 0.3); },
+  },
+  player: { edge: CL, edgeW: 12, ink: '#FFFFFF', muted: 'rgba(255,236,224,0.85)', mutedHex: 'FFE6D6', accent: '#F4EBD9', shadow: 'rgba(70,20,5,.5)', XW: 800 },
+  caps: { frame: '#F8F0E4', teamInk: '#5A2410' },
+  section: { by: 690, cy: 900, countInk: '#F4EBD9' },
+  title: { maxW: 1100 },
+});
+
+/* table tennis */
+const TT_BLUE = '#1E4E9C', TT_ORANGE = '#FF7A1A';
+function ttTop(c) { c.fillStyle = TT_BLUE; c.fillRect(0, 0, BW, BH); noiseLayer(c, 0.12, 91, 100, 160); const g = c.createLinearGradient(0, 0, BW, BH); g.addColorStop(0, 'rgba(255,255,255,.12)'); g.addColorStop(0.5, 'rgba(255,255,255,0)'); g.addColorStop(1, 'rgba(0,0,0,.2)'); c.fillStyle = g; c.fillRect(0, 0, BW, BH); }
+function ttNetV(c, x) { c.fillStyle = 'rgba(0,0,0,.35)'; c.fillRect(x + 12, 0, 28, BH); c.save(); c.strokeStyle = 'rgba(20,20,20,.85)'; c.lineWidth = 2; c.beginPath(); for (let y = 0; y < BH; y += 14) { c.moveTo(x, y); c.lineTo(x + 30, y); } c.moveTo(x + 15, 0); c.lineTo(x + 15, BH); c.stroke(); c.restore(); c.fillStyle = '#F5F5F0'; c.fillRect(x - 4, 0, 8, BH); }
+function ttBall(c, x, y, r) { c.save(); setShadow(c, 'rgba(0,0,0,.4)', 18); c.fillStyle = TT_ORANGE; c.beginPath(); c.arc(x, y, r, 0, Math.PI * 2); c.fill(); c.restore(); const g = c.createRadialGradient(x - r * 0.35, y - r * 0.4, 2, x, y, r); g.addColorStop(0, 'rgba(255,255,255,.6)'); g.addColorStop(1, 'rgba(120,40,0,.25)'); c.fillStyle = g; c.beginPath(); c.arc(x, y, r, 0, Math.PI * 2); c.fill(); }
+sportTheme({
+  key: 'tttable', sport: 'tabletennis', label: 'Table top', ink: '#FFFFFF', accent: TT_ORANGE, onAccent: '#111', shadow: 'rgba(0,10,40,.45)',
+  base: ttTop,
+  deco: {
+    player: c => { stroke(c, '#F5F5F0', 10, () => { c.rect(810, 40, 1070, 1000); c.moveTo(810, 540); c.lineTo(1880, 540); }); ttNetV(c, 784); },
+    title: c => { stroke(c, '#F5F5F0', 12, () => { c.rect(40, 40, BW - 80, BH - 80); c.moveTo(40, BH / 2); c.lineTo(BW - 40, BH / 2); }); ttNetV(c, 1340); ttBall(c, 1640, 300, 34); },
+    caps: c => { stroke(c, '#F5F5F0', 12, () => { c.rect(40, 40, BW - 80, BH - 80); }); },
+    section: c => { stroke(c, '#F5F5F0', 12, () => { c.rect(40, 40, BW - 80, BH - 80); c.moveTo(40, BH / 2); c.lineTo(BW - 40, BH / 2); }); ttBall(c, 1660, 860, 34); },
+  },
+  player: { edge: null, X: 880, XW: 940, ey: 100, ny: 170, ink: '#FFFFFF', muted: 'rgba(220,232,255,0.85)', mutedHex: 'DCE8FF', accent: TT_ORANGE, shadow: 'rgba(0,10,40,.45)', bottom: 950 },
+  caps: { frame: '#F5F5F0', hy: 130, top: 240 },
+  section: { by: 700, cy: 880 },
+  title: { maxW: 1100 },
+});
+function rubber(c, col, dot, seed) {
+  c.fillStyle = col; c.fillRect(0, 0, BW, BH);
+  c.fillStyle = dot; for (let y = 6; y < BH; y += 16) for (let x = (y / 16 % 2) * 8; x < BW; x += 16) { c.beginPath(); c.arc(x, y, 3.2, 0, Math.PI * 2); c.fill(); }
+  noiseLayer(c, 0.15, seed, 90, 170);
+  const g = c.createLinearGradient(0, 0, BW, BH); g.addColorStop(0, 'rgba(255,255,255,.14)'); g.addColorStop(0.45, 'rgba(255,255,255,0)'); g.addColorStop(1, 'rgba(0,0,0,.3)'); c.fillStyle = g; c.fillRect(0, 0, BW, BH);
+}
+function paddle(c, x, y, s, rot) {
+  c.save(); c.translate(x, y); c.rotate(rot);
+  c.fillStyle = '#C79A60'; c.fillRect(-0.16 * s, 0.62 * s, 0.32 * s, 0.9 * s);
+  c.fillStyle = '#8E6334'; c.fillRect(-0.16 * s, 0.62 * s, 0.32 * s, 0.12 * s);
+  setShadow(c, 'rgba(0,0,0,.5)', 30); c.fillStyle = '#111'; c.beginPath(); c.ellipse(0, 0, 0.78 * s, 0.82 * s, 0, 0, Math.PI * 2); c.fill(); shadow(c, false);
+  c.fillStyle = '#C8161D'; c.beginPath(); c.ellipse(0, 0, 0.74 * s, 0.78 * s, 0, 0, Math.PI * 2); c.fill();
+  c.save(); c.clip(); c.fillStyle = 'rgba(80,0,0,.35)'; for (let yy = -s; yy < s; yy += 14) for (let xx = -s; xx < s; xx += 14) { c.beginPath(); c.arc(xx, yy, 2.6, 0, Math.PI * 2); c.fill(); }
+  const g = c.createLinearGradient(-s, -s, s, s); g.addColorStop(0, 'rgba(255,255,255,.2)'); g.addColorStop(1, 'rgba(0,0,0,.3)'); c.fillStyle = g; c.fillRect(-s, -s, 2 * s, 2 * s); c.restore();
+  c.restore();
+}
+sportTheme({
+  key: 'ttpaddle', sport: 'tabletennis', label: 'Red and black rubber', ink: '#FFFFFF', accent: '#FFFFFF', onAccent: '#B0141B', shadow: 'rgba(0,0,0,.45)',
+  base: c => rubber(c, '#B3141B', 'rgba(70,0,0,.35)', 93),
+  deco: {
+    player: c => { c.fillStyle = '#141414'; c.fillRect(0, 0, 790, BH); },
+    title: c => { paddle(c, 1560, 470, 380, -0.5); ttBall(c, 1180, 860, 36); },
+    caps: c => { c.save(); c.globalCompositeOperation = 'source-over'; c.fillStyle = '#141414'; c.fillRect(0, 0, BW, 205); c.restore(); },
+    section: c => { const h = document.createElement('canvas'); h.width = BW; h.height = BH; rubber(h.getContext('2d'), '#151515', 'rgba(255,255,255,.06)', 94); c.drawImage(h, BW / 2, 0, BW / 2, BH, BW / 2, 0, BW / 2, BH); },
+  },
+  player: { edge: '#141414', edgeW: 22, ink: '#FFFFFF', muted: 'rgba(255,225,225,0.85)', mutedHex: 'FFE1E1', accent: '#FFFFFF', eyebrow: '#FFD6D6', shadow: 'rgba(0,0,0,.45)' },
+  caps: { headInk: '#fff', frame: '#F4F1E8' },
+  section: { by: 690, cy: 880, countInk: '#fff' },
+  title: { maxW: 1050, eyebrow: '#FFD6D6' },
+});
+
+/* chess */
+const MAPLE = '#E6C89A', WALNUT = '#6B4426', BRASS = '#D4A64A', CREAM = '#F3E6CF';
+const PIECE_FONT = '"Segoe UI Symbol","Apple Symbols","Noto Sans Symbols 2","DejaVu Sans",serif';
+function walnut(c) { planks(c, 64, 24, 38, 20, 101); glow(c, 1200, 300, 1200, 0.12, '255,220,170'); }
+function boardSquares(c, x, y, sq, files, ranks, startDark, coords) {
+  for (let r = 0; r < ranks; r++) for (let f = 0; f < files; f++) {
+    c.fillStyle = (r + f + (startDark ? 1 : 0)) % 2 ? WALNUT : MAPLE; c.fillRect(x + f * sq, y + r * sq, sq, sq);
+  }
+  noiseLayer(c, 0.06, 102, 100, 160);
+  if (coords) {
+    c.font = `700 ${Math.round(sq * 0.17)}px ${F.cond}`; c.textBaseline = 'alphabetic';
+    for (let f = 0; f < files; f++) { c.fillStyle = (ranks - 1 + f + (startDark ? 1 : 0)) % 2 ? MAPLE : WALNUT; c.fillText('abcdefgh'[f % 8], x + f * sq + sq * 0.8, y + ranks * sq - sq * 0.08); }
+    for (let r = 0; r < ranks; r++) { c.fillStyle = (r + (startDark ? 1 : 0)) % 2 ? MAPLE : WALNUT; c.fillText(String(coords - r), x + sq * 0.06, y + r * sq + sq * 0.22); }
+  }
+}
+function pieces(c, x, y, sq, list) {
+  c.textAlign = 'center'; c.textBaseline = 'middle'; c.font = `${Math.round(sq * 0.8)}px ${PIECE_FONT}`;
+  list.forEach(([g, f, r, white]) => { const px = x + f * sq + sq / 2, py = y + r * sq + sq * 0.54; c.fillStyle = white ? '#FBF6EC' : '#141414'; c.strokeStyle = white ? '#141414' : '#FBF6EC'; c.lineWidth = 2; setShadow(c, 'rgba(0,0,0,.4)', 8); c.fillText(g, px, py); shadow(c, false); });
+  c.textAlign = 'left';
+}
+sportTheme({
+  key: 'chboard', sport: 'chess', label: 'Wooden board', ink: CREAM, accent: BRASS, onAccent: '#2A1A0E', shadow: 'rgba(0,0,0,.5)',
+  base: walnut,
+  deco: {
+    player: c => { boardSquares(c, 768, 0, 144, 8, 1, false, 0); c.font = `700 24px ${F.cond}`; for (let f = 0; f < 8; f++) { c.fillStyle = f % 2 ? MAPLE : WALNUT; c.fillText('abcdefgh'[f], 768 + f * 144 + 116, 134); } c.fillStyle = BRASS; c.fillRect(768, 144, BW, 6); },
+    title: c => {
+      c.fillStyle = '#2A1A0E'; c.fillRect(964, 72, 896, 936); boardSquares(c, 984, 92, 112, 8, 8, false, 8);
+      pieces(c, 984, 92, 112, [['♚', 6, 0, 0], ['♜', 5, 0, 0], ['♛', 3, 1, 0], ['♝', 2, 3, 0], ['♞', 5, 2, 0], ['♔', 6, 7, 1], ['♖', 4, 7, 1], ['♕', 3, 5, 1], ['♘', 4, 4, 1], ['♗', 1, 4, 1]]);
+    },
+    caps: c => { boardSquares(c, 0, 960, 120, 16, 1, false, 0); c.fillStyle = BRASS; c.fillRect(0, 954, BW, 6); },
+    section: c => { boardSquares(c, 0, 0, 120, 16, 1, true, 0); boardSquares(c, 0, 960, 120, 16, 1, false, 0); c.fillStyle = BRASS; c.fillRect(0, 120, BW, 6); c.fillRect(0, 954, BW, 6); },
+  },
+  player: { edge: BRASS, edgeW: 8, ink: CREAM, muted: 'rgba(243,230,207,0.75)', mutedHex: 'D9C9AE', accent: BRASS, ey: 210, ny: 256, nameH: 320, shadow: null },
+  caps: { headInk: CREAM, frame: MAPLE, top: 210 },
+  section: { by: 690, cy: 860, countInk: BRASS },
+  title: { maxW: 820, eyebrow: BRASS },
+});
+const MOVES = [['e4', 'e5'], ['Nf3', 'Nc6'], ['Bb5', 'a6'], ['Ba4', 'Nf6'], ['O-O', 'Be7'], ['Re1', 'b5'], ['Bb3', 'd6'], ['c3', 'O-O'], ['h3', 'Nb8'], ['d4', 'Nbd7'], ['Nbd2', 'Bb7'], ['Bc2', 'Re8'], ['Nf1', 'Bf8'], ['Ng3', 'g6'], ['a4', 'c5']];
+function scoresheet(c, x, y, rows, rowH, w) {
+  const nW = 60, cW = (w - nW) / 2;
+  c.strokeStyle = 'rgba(40,40,40,.45)'; c.lineWidth = 2;
+  for (let i = 0; i <= rows; i++) { c.beginPath(); c.moveTo(x, y + i * rowH); c.lineTo(x + w, y + i * rowH); c.stroke(); }
+  for (const dx of [0, nW, nW + cW, w]) { c.beginPath(); c.moveTo(x + dx, y); c.lineTo(x + dx, y + rows * rowH); c.stroke(); }
+  c.fillStyle = 'rgba(40,40,40,.7)'; c.font = `700 20px ${F.cond}`; c.textBaseline = 'alphabetic';
+  c.fillText('WHITE', x + nW + 10, y - 10); c.fillText('BLACK', x + nW + cW + 10, y - 10);
+  for (let i = 0; i < rows; i++) {
+    c.fillStyle = 'rgba(40,40,40,.7)'; c.font = `600 24px ${F.cond}`; c.fillText(String(i + 1), x + 14, y + i * rowH + rowH * 0.68);
+    const m = MOVES[i]; if (!m) continue;
+    c.fillStyle = '#1F3F8F'; c.font = `italic 500 ${Math.round(rowH * 0.55)}px ${F.body}`;
+    c.save(); c.translate(x + nW + 14, y + i * rowH + rowH * 0.7); c.rotate(-0.02); c.fillText(m[0], 0, 0); c.restore();
+    c.save(); c.translate(x + nW + cW + 14, y + i * rowH + rowH * 0.7); c.rotate(0.015); c.fillText(m[1], 0, 0); c.restore();
+  }
+}
+sportTheme({
+  key: 'chsheet', sport: 'chess', label: 'Scoresheet', ink: '#1A1A1A', accent: '#1F3F8F', onAccent: '#fff', shadow: null,
+  base: c => { paperBase(c, '#F4F0E6'); },
+  deco: {
+    player: c => { sheetHeader(c, 'OFFICIAL SCORESHEET  ·  ROUND ___  ·  BOARD ___', '', 880, 1860); c.fillStyle = 'rgba(40,40,40,.6)'; c.fillRect(860, 56, 1000, 3); scoresheet(c, 1580, 120, 15, 60, 290); c.save(); c.translate(POL.cx, POL.cy); c.rotate(POL.rot); setShadow(c, 'rgba(0,0,0,.35)', 30); c.fillStyle = '#fff'; c.fillRect(-POL.fw / 2, -POL.fh / 2, POL.fw, POL.fh); c.restore(); },
+    title: c => { sheetHeader(c, 'OFFICIAL SCORESHEET', 'ROUND 1  ·  BOARD 1', 120, 1860); c.fillStyle = 'rgba(40,40,40,.6)'; c.fillRect(120, 56, 1740, 3); scoresheet(c, 1420, 140, 13, 60, 440); c.fillStyle = 'rgba(40,40,40,.5)'; c.fillRect(120, 990, 500, 2); c.fillRect(760, 990, 500, 2); c.font = `700 22px ${F.cond}`; c.fillText("WHITE'S SIGNATURE", 120, 1022); c.fillText("BLACK'S SIGNATURE", 760, 1022); },
+    caps: c => { sheetHeader(c, 'OFFICIAL SCORESHEET', 'TEAM CAPTAINS', 60, 1860); c.fillStyle = 'rgba(40,40,40,.6)'; c.fillRect(60, 56, 1800, 3); },
+    section: c => { sheetHeader(c, 'OFFICIAL SCORESHEET', '', 60, 1860); c.fillStyle = 'rgba(40,40,40,.6)'; c.fillRect(60, 56, 1800, 3); scoresheet(c, 1520, 140, 5, 60, 340); },
+  },
+  player: { photo: 'polaroid', X: 880, XW: 660, ey: 110, ny: 170, nameH: 360, ink: '#1A1A1A', muted: 'rgba(40,40,40,0.7)', mutedHex: '555555', accent: '#1F3F8F', eyebrow: '#1F3F8F', shadow: null },
+  caps: { headInk: '#1A1A1A', card: 'polaroid', teamBg: null, teamInk: '#1F3F8F', hy: 130 },
+  section: { ink: '#1A1A1A', countInk: '#1F3F8F', by: 660, cy: 900, maxW: 1300, align: 'left', x: 140, after: (c, x, w) => marker(c, x + 10, 730, w - 20, '#1F3F8F') },
+  title: { ink: '#1A1A1A', maxW: 1200, ey: 200, ty: 280 },
+});
+
+/* badminton */
+const BD_GREEN = '#1F7A57';
+function mat(c) { c.fillStyle = BD_GREEN; c.fillRect(0, 0, BW, BH); noiseLayer(c, 0.3, 111, 80, 180); glow(c, 1300, 200, 1300, 0.16); }
+function bdCourt(c, x, y, w, col) {
+  // 13.4 m x 6.1 m lengthwise; singles sideline 0.46 m in, long service line (doubles) 0.76 m in, short service line 1.98 m from the net
+  const k = w / 13.4, h = 6.1 * k;
+  stroke(c, col, 7, () => { c.rect(x, y, w, h); c.moveTo(x, y + 0.46 * k); c.lineTo(x + w, y + 0.46 * k); c.moveTo(x, y + h - 0.46 * k); c.lineTo(x + w, y + h - 0.46 * k);
+    c.moveTo(x + 0.76 * k, y); c.lineTo(x + 0.76 * k, y + h); c.moveTo(x + w - 0.76 * k, y); c.lineTo(x + w - 0.76 * k, y + h);
+    c.moveTo(x + w / 2 - 1.98 * k, y); c.lineTo(x + w / 2 - 1.98 * k, y + h); c.moveTo(x + w / 2 + 1.98 * k, y); c.lineTo(x + w / 2 + 1.98 * k, y + h);
+    c.moveTo(x, y + h / 2); c.lineTo(x + w / 2 - 1.98 * k, y + h / 2); c.moveTo(x + w / 2 + 1.98 * k, y + h / 2); c.lineTo(x + w, y + h / 2); });
+  c.fillStyle = 'rgba(0,0,0,.25)'; c.fillRect(x + w / 2 + 4, y - 30, 12, h + 60); c.fillStyle = '#F2F2EF'; c.fillRect(x + w / 2 - 3, y - 30, 6, h + 60);
+}
+sportTheme({
+  key: 'bdcourt', sport: 'badminton', label: 'Court mat', ink: '#FFFFFF', accent: '#FFE14D', onAccent: '#123', shadow: 'rgba(0,30,15,.5)',
+  base: mat,
+  deco: {
+    player: c => { stroke(c, WL, 8, () => { c.moveTo(768, 150); c.lineTo(BW, 150); c.moveTo(768, 210); c.lineTo(BW, 210); c.moveTo(1860, 150); c.lineTo(1860, BH); c.moveTo(1810, 150); c.lineTo(1810, BH); }); darkEdges(c, 0.3); },
+    title: c => { bdCourt(c, 820, 230, 1400, WL); darkEdges(c, 0.3); },
+    caps: c => { stroke(c, WL, 8, () => { c.moveTo(0, 200); c.lineTo(BW, 200); c.moveTo(0, 240); c.lineTo(BW, 240); }); darkEdges(c, 0.3); },
+    section: c => { stroke(c, WL, 8, () => { c.moveTo(0, 780); c.lineTo(BW, 780); c.moveTo(BW / 2, 780); c.lineTo(BW / 2, BH); }); darkEdges(c, 0.3); },
+  },
+  player: { edge: WL, edgeW: 8, ink: '#FFFFFF', muted: 'rgba(225,245,235,0.85)', mutedHex: 'E1F5EB', accent: '#FFE14D', ey: 80, ny: 260, shadow: 'rgba(0,30,15,.5)', XW: 900 },
+  caps: { frame: WL, top: 260, hy: 100 },
+  section: { by: 700, cy: 920 },
+  title: { maxW: 1100 },
+});
+function shuttle(c, x, y, s, rot) {
+  c.save(); c.translate(x, y); c.rotate(rot);
+  setShadow(c, 'rgba(0,0,0,.45)', 30);
+  c.fillStyle = 'rgba(250,250,245,.95)'; c.beginPath(); c.moveTo(-0.17 * s, -0.12 * s); c.lineTo(-0.46 * s, -1.0 * s); c.lineTo(0.46 * s, -1.0 * s); c.lineTo(0.17 * s, -0.12 * s); c.closePath(); c.fill(); shadow(c, false);
+  for (let i = 0; i < 16; i++) { const t = i / 15, tx = -0.46 * s + t * 0.92 * s; c.fillStyle = 'rgba(250,250,245,.95)'; c.beginPath(); c.ellipse(tx, -1.0 * s, 0.075 * s, 0.11 * s, 0, 0, Math.PI * 2); c.fill(); }
+  c.strokeStyle = 'rgba(150,150,140,.6)'; c.lineWidth = 0.008 * s;
+  for (let i = 0; i < 16; i++) { const t = i / 15; c.beginPath(); c.moveTo(-0.15 * s + t * 0.3 * s, -0.12 * s); c.lineTo(-0.46 * s + t * 0.92 * s, -1.05 * s); c.stroke(); }
+  c.strokeStyle = 'rgba(40,40,40,.7)'; c.lineWidth = 0.02 * s;
+  for (const v of [0.45, 0.6]) { c.beginPath(); c.moveTo(-(0.17 + 0.29 * (v - 0.12) / 0.88) * s, -v * s); c.lineTo((0.17 + 0.29 * (v - 0.12) / 0.88) * s, -v * s); c.stroke(); }
+  c.fillStyle = '#F4F1E8'; c.beginPath(); c.arc(0, 0, 0.19 * s, 0, Math.PI); c.fill(); c.fillRect(-0.19 * s, -0.12 * s, 0.38 * s, 0.12 * s);
+  c.fillStyle = '#C8262B'; c.fillRect(-0.19 * s, -0.1 * s, 0.38 * s, 0.04 * s);
+  c.restore();
+}
+function hallDark(c) { const g = c.createLinearGradient(0, 0, 0, BH); g.addColorStop(0, '#0A2233'); g.addColorStop(1, '#0E3A45'); c.fillStyle = g; c.fillRect(0, 0, BW, BH); for (const lx of [400, 1100, 1700]) glow(c, lx, -60, 560, 0.2); noiseLayer(c, 0.12, 121, 90, 170); }
+sportTheme({
+  key: 'bdshuttle', sport: 'badminton', label: 'Shuttlecock', ink: '#FFFFFF', accent: '#FFE14D', onAccent: '#123', shadow: 'rgba(0,10,20,.6)',
+  base: hallDark,
+  deco: {
+    player: c => { shuttle(c, 1760, 1020, 330, -0.6); },
+    title: c => { shuttle(c, 1520, 760, 640, -0.5); },
+    caps: c => { shuttle(c, 1890, 1130, 200, -0.7); shuttle(c, 90, 200, 180, 0.8); },
+    section: c => { shuttle(c, 1500, 820, 600, -0.45); },
+  },
+  player: { edge: '#FFE14D', edgeW: 10, ink: '#FFFFFF', muted: 'rgba(210,235,240,0.85)', mutedHex: 'D2EBF0', accent: '#FFE14D', XW: 760, shadow: 'rgba(0,10,20,.6)' },
+  caps: { frame: '#F4F1E8' },
+  section: { align: 'left', x: 120, by: 680, cy: 820, maxW: 1100 },
+  title: { maxW: 1000 },
+});
+/* volleyball: blue court on a green free zone, sports-mat finish */
+const VB_BLUE = '#173F8C', VB_GREEN = '#1B6B44';
+function matFinish(c) {
+  noiseLayer(c, 0.22, 131, 90, 170);
+  const t = document.createElement('canvas'); t.width = t.height = 12; const g = t.getContext('2d');
+  g.fillStyle = 'rgba(255,255,255,.045)'; g.fillRect(0, 0, 6, 6); g.fillRect(6, 6, 6, 6);          // embossed mat grain
+  c.save(); c.fillStyle = c.createPattern(t, 'repeat'); c.fillRect(0, 0, BW, BH); c.restore();
+  c.fillStyle = 'rgba(0,0,0,.05)'; for (let x = 120; x < BW; x += 236) c.fillRect(x, 0, 2, BH);    // roll seams
+  glow(c, 1300, 380, 1250, 0.18); darkEdges(c, 0.25);
+}
+function vbTop(c, x, y, w) {
+  const h = w / 2, t = 12, cx = x + w / 2, a = w / 6;
+  c.fillStyle = VB_BLUE; c.fillRect(x, y, w, h);
+  lineRect(c, x, y, w, t); lineRect(c, x, y + h - t, w, t); lineRect(c, x, y, t, h); lineRect(c, x + w - t, y, t, h);
+  lineRect(c, cx - t / 2, y, t, h); lineRect(c, cx - a - t / 2, y, t, h); lineRect(c, cx + a - t / 2, y, t, h);
+  for (const ax of [cx - a, cx + a]) for (let k = 0; k < 5; k++) { lineRect(c, ax - t / 2, y - 40 - k * 70, t, 30); lineRect(c, ax - t / 2, y + h + 10 + k * 70, t, 30); }
+  c.fillStyle = 'rgba(0,0,0,0.22)'; c.fillRect(cx + 6, y - 90, 26, h + 180);
+  c.fillStyle = '#16181C'; c.fillRect(cx - 5, y - 90, 10, h + 180);
+  c.fillStyle = '#D9DCE2'; for (const py of [y - 90, y + h + 90]) { c.beginPath(); c.arc(cx, py, 18, 0, Math.PI * 2); c.fill(); }
+}
+sportTheme({
+  key: 'vbmat', sport: 'volleyball', label: 'Blue and green court', ink: '#FFFFFF', accent: '#FFE03A', onAccent: '#111', shadow: 'rgba(0,30,60,.55)',
+  base: c => { c.fillStyle = VB_GREEN; c.fillRect(0, 0, BW, BH); },
+  deco: {
+    player: c => { c.fillStyle = VB_BLUE; c.fillRect(COURT_X, END_Y, RIGHT_X - COURT_X, BH - END_Y); lineRect(c, COURT_X, END_Y, RIGHT_X - COURT_X, 13); lineRect(c, RIGHT_X - 13, END_Y, 13, BH - END_Y); matFinish(c); },
+    title: c => { vbTop(c, 700, 160, 1520); matFinish(c); const g = c.createLinearGradient(0, 0, 1300, 0); g.addColorStop(0, 'rgba(8,40,30,0.22)'); g.addColorStop(1, 'rgba(8,40,30,0)'); c.fillStyle = g; c.fillRect(0, 0, BW, BH); },
+    caps: c => { c.fillStyle = VB_BLUE; c.fillRect(64, CAP_LINE, BW - 128, BH - CAP_LINE); lineRect(c, 64, CAP_LINE, BW - 128, 13); lineRect(c, 64, CAP_LINE, 13, BH - CAP_LINE); lineRect(c, BW - 77, CAP_LINE, 13, BH - CAP_LINE); matFinish(c); },
+    section: c => { c.fillStyle = VB_BLUE; c.fillRect(200, 0, BW - 400, BH); lineRect(c, 200, 0, 13, BH); lineRect(c, BW - 213, 0, 13, BH); lineRect(c, 200, 780, BW - 400, 13); for (let k = 0; k < 3; k++) { lineRect(c, 140 - k * 70, 780, 30, 13); lineRect(c, BW - 170 + k * 70, 780, 30, 13); } matFinish(c); },
+  },
+  player: { edge: '#FFFFFF', ink: '#FFFFFF', muted: 'rgba(235,245,255,0.92)', mutedHex: 'EBF5FF', accent: '#FFE03A', shadow: 'rgba(0,30,60,.55)' },
+  caps: { frame: '#F4F1E8' },
+  section: { by: 690, cy: 920 },
+  title: { maxW: 1300 },
+});
+const SPORT_DEFAULT = { volleyball: 'vbmat', basketball: 'bbwood', football: 'fbpitch', tennis: 'tnhard', tabletennis: 'tttable', chess: 'chboard', badminton: 'bdcourt' };
+
+function drawSlide(canvas, sl, W, H) {
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d');
+  ctx.save(); ctx.scale(W / BW, H / BH);
+  const a = S.settings.accent, th = THEMES[themeOf()];
+  if (sl.type === 'title') th.title(ctx, sl, a);
+  else if (sl.type === 'captains') th.captains(ctx, sl, a);
+  else if (sl.type === 'section') th.section(ctx, sl, a);
+  else drawPlayer(ctx, sl, a, S.settings.phone);
+  ctx.restore();
+}
+// backgrounds without text, for the PowerPoint export
+function bgImage(type) {
+  const c = document.createElement('canvas'); c.width = 1600; c.height = 900;
+  const x = c.getContext('2d'); x.scale(1600 / BW, 900 / BH);
+  if (STYLES[type]) { x.drawImage(bgCanvas('player-' + type, STYLES[type].paint), 0, 0, BW, BH); if (STYLES[type].overlay) STYLES[type].overlay(x); }
+  else if (type === 'title') x.drawImage(bgCanvas('title', paintTitleBg), 0, 0, BW, BH);
+  else if (type === 'captains') x.drawImage(bgCanvas('captains', paintCaptainsBg), 0, 0, BW, BH);
+  else { x.drawImage(bgCanvas('sectionBack', paintSectionBack), 0, 0, BW, BH); x.drawImage(bgCanvas('net', paintNet), 0, 0, BW, BH); }
+  return c.toDataURL('image/jpeg', 0.88);
+}
+
+/* ---------- photos ---------- */
+const MIME = { jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', gif: 'image/gif', webp: 'image/webp', bmp: 'image/bmp', heic: 'image/heic', heif: 'image/heif', pdf: 'application/pdf' };
+const extOf = n => (n.split('.').pop() || '').toLowerCase();
+function loadImg(blob) {
+  return new Promise((res, rej) => { const u = URL.createObjectURL(blob); const i = new Image(); i.onload = () => res(i); i.onerror = () => rej(new Error('decode')); i.src = u; });
+}
+async function decodePhoto(f) {
+  const ext = extOf(f.name);
+  let blob = f.blob;
+  if (ext === 'pdf') {
+    await loadScript(LIB.pdfWorker); await loadScript(LIB.pdf);
+    const pdf = await window.pdfjsLib.getDocument({ data: new Uint8Array(await blob.arrayBuffer()) }).promise;
+    const page = await pdf.getPage(1);
+    const vp = page.getViewport({ scale: 1 }); const sc = Math.min(3, 1400 / Math.max(vp.width, vp.height));
+    const v2 = page.getViewport({ scale: sc });
+    const c = document.createElement('canvas'); c.width = v2.width; c.height = v2.height;
+    const cx = c.getContext('2d'); cx.fillStyle = '#fff'; cx.fillRect(0, 0, c.width, c.height);
+    await page.render({ canvasContext: cx, viewport: v2 }).promise;
+    return c;
+  }
+  try { return await createImageBitmap(blob); } catch (e) {}
+  try { return await loadImg(blob); } catch (e) {}
+  if (ext === 'heic' || ext === 'heif') {
+    await loadScript(LIB.heic);
+    let out = await window.heic2any({ blob, toType: 'image/jpeg', quality: 0.9 });
+    if (Array.isArray(out)) out = out[0];
+    try { return await createImageBitmap(out); } catch (e) { return await loadImg(out); }
+  }
+  throw new Error('Unsupported image');
+}
+function cropPortrait(src) {
+  const W = 760, H = 1069, ta = W / H;
+  const sw = src.naturalWidth || src.width, sh = src.naturalHeight || src.height;
+  let cw, ch, cx, cy;
+  if (sw / sh > ta) { ch = sh; cw = sh * ta; cx = (sw - cw) / 2; cy = 0; }
+  else { cw = sw; ch = sw / ta; cx = 0; cy = (sh - ch) * 0.3; }   // keep faces: bias toward the top
+  const c = document.createElement('canvas'); c.width = W; c.height = H;
+  const x = c.getContext('2d'); x.fillStyle = C.blueDeep; x.fillRect(0, 0, W, H);
+  x.drawImage(src, cx, cy, cw, ch, 0, 0, W, H);
+  return c;
+}
+let procPromise = null, procAgain = false;
+function processPhotos() {
+  if (procPromise) { procAgain = true; return procPromise; }
+  procPromise = (async () => {
+    do { procAgain = false; derive(); await processBatch(); } while (procAgain);
+  })().finally(() => { procPromise = null; renderAll(); });
+  return procPromise;
+}
+async function processBatch() {
+  {
+    const todo = [...new Set([...matched.values()])].filter(f => !S.processed.has(f.name));
+    if (!todo.length) return;
+    let done = 0;
+    const worker = async () => {
+      while (todo.length) {
+        const f = todo.shift();
+        try { S.processed.set(f.name, { canvas: cropPortrait(await decodePhoto(f)) }); }
+        catch (e) { S.processed.set(f.name, { error: e.message }); }
+        done++;
+        $('photoStatus').textContent = `Preparing photos ${done}…`;
+        if (done % 6 === 0) scheduleRender();
+      }
+    };
+    await Promise.all([worker(), worker(), worker()]);
+  }
+}
+
+/* ---------- inputs ---------- */
+function decodeText(buf) {
+  try { return new TextDecoder('utf-8', { fatal: true }).decode(buf); }
+  catch (e) { return new TextDecoder('windows-1252').decode(buf); }
+}
+async function loadSheet(file) {
+  const buf = await file.arrayBuffer();
+  let wb;
+  if (/\.csv$/i.test(file.name)) wb = XLSX.read(decodeText(buf).replace(/^﻿/, ''), { type: 'string', raw: true });
+  else wb = XLSX.read(buf, { type: 'array' });
+  let best = null;
+  wb.SheetNames.forEach(n => { const r = XLSX.utils.sheet_to_json(wb.Sheets[n], { defval: '', raw: false }); if (!best || r.length > best.length) best = r; });
+  if (!best || !best.length) { toast('That sheet has no rows. Export the responses again from Forms.'); return; }
+  const headers = [];
+  best.forEach(r => Object.keys(r).forEach(k => { if (!headers.includes(k)) headers.push(k); }));
+  S.rows = best; S.headers = headers; S.demo = false; S.sheetName = file.name; S.removed.clear();
+  S.map = Core.detectMapping(headers, best);
+  if (!S.map.name || !S.map.gender) $('mapping').open = true;
+  $('sheetStatus').textContent = `${file.name} · ${best.length} rows`; $('sheetStatus').classList.add('ok');
+  buildMapUI(); renderAll(); processPhotos();
+}
+async function addPhotoFiles(files) {
+  const added = [];
+  for (const file of files) {
+    if (/\.zip$/i.test(file.name)) {
+      const zip = await JSZip.loadAsync(file);
+      const entries = Object.values(zip.files).filter(e => !e.dir && !/(^|\/)(__MACOSX|\.)/.test(e.name));
+      for (const e of entries) {
+        const name = e.name.split('/').pop(); const ext = extOf(name);
+        if (!MIME[ext]) continue;
+        const ab = await e.async('arraybuffer');
+        added.push({ name, blob: new Blob([ab], { type: MIME[ext] }) });
+      }
+    } else if (MIME[extOf(file.name)] || /^image\//.test(file.type)) added.push({ name: file.name, blob: file });
+  }
+  if (!added.length) { toast('No photos found. Use a .zip of the Forms photo folder, or select image files.'); return; }
+  const names = new Set(added.map(a => a.name.toLowerCase()));
+  S.photos = S.photos.filter(p => !names.has(p.name.toLowerCase())).concat(added);
+  added.forEach(a => S.processed.delete(a.name));
+  derive();
+  $('photoStatus').textContent = `${S.photos.length} files loaded`;
+  renderAll(); processPhotos();
+}
+function routeFiles(list) {
+  const files = [...list];
+  const sheet = files.find(f => /\.(xlsx|xls|csv)$/i.test(f.name));
+  const rest = files.filter(f => f !== sheet);
+  const run = async () => {
+    try {
+      if (sheet) await loadSheet(sheet);
+      if (rest.length) await addPhotoFiles(rest);
+    } catch (e) { console.error(e); toast('Could not read that file: ' + e.message); }
+  };
+  run();
+}
+function setupDrop(el, input, handler) {
+  el.addEventListener('click', () => input.click());
+  el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); input.click(); } });
+  input.addEventListener('change', () => { if (input.files.length) handler(input.files); input.value = ''; });
+}
+setupDrop($('dropSheet'), $('inSheet'), routeFiles);
+setupDrop($('dropPhotos'), $('inPhotos'), fl => routeFiles(fl));
+let dragDepth = 0;
+document.addEventListener('dragenter', e => { if (dragFrom >= 0) return; e.preventDefault(); dragDepth++; document.querySelectorAll('.drop').forEach(d => d.classList.add('over')); });
+document.addEventListener('dragleave', () => { if (--dragDepth <= 0) { dragDepth = 0; document.querySelectorAll('.drop').forEach(d => d.classList.remove('over')); } });
+document.addEventListener('dragover', e => e.preventDefault());
+document.addEventListener('drop', e => { e.preventDefault(); dragDepth = 0; document.querySelectorAll('.drop').forEach(d => d.classList.remove('over')); if (e.dataTransfer.files.length) routeFiles(e.dataTransfer.files); });
+
+/* ---------- mapping + settings UI ---------- */
+function buildMapUI() {
+  const g = $('mapgrid'); g.innerHTML = '';
+  Core.FIELDS.forEach(f => {
+    const d = document.createElement('div'); d.className = 'field';
+    const id = 'map_' + f.key;
+    const lab = document.createElement('label'); lab.htmlFor = id; lab.textContent = f.label + (f.required ? ' *' : '');
+    const sel = document.createElement('select'); sel.id = id;
+    sel.append(new Option('— not in sheet —', ''));
+    S.headers.forEach(h => sel.append(new Option(h, h)));
+    sel.value = S.map[f.key] || '';
+    sel.addEventListener('change', () => { if (sel.value) S.map[f.key] = sel.value; else delete S.map[f.key]; renderAll(); processPhotos(); });
+    d.append(lab, sel); g.append(d);
+  });
+}
+function initSettings() {
+  $('sEvent').value = S.settings.event; $('sDate').value = S.settings.date; $('sPhone').checked = S.settings.phone;
+  const ss = $('sStyle'), sp = $('sSport');
+  if (!SPORTS[S.settings.sport]) S.settings.sport = THEME_SPORT[themeOf()] === 'any' || !THEME_SPORT[themeOf()] ? 'volleyball' : THEME_SPORT[themeOf()];
+  Object.keys(SPORTS).forEach(k => sp.append(new Option(SPORTS[k], k)));
+  sp.value = S.settings.sport;
+  const fillThemes = () => {
+    ss.innerHTML = '';
+    const own = document.createElement('optgroup'); own.label = SPORTS[S.settings.sport];
+    Object.keys(THEMES).filter(k => THEME_SPORT[k] === S.settings.sport).forEach(k => own.append(new Option(STYLES[k].label, k)));
+    const any = document.createElement('optgroup'); any.label = 'Any sport';
+    Object.keys(THEMES).filter(k => THEME_SPORT[k] === 'any').forEach(k => any.append(new Option(STYLES[k].label, k)));
+    ss.append(own, any);
+    if (![...ss.options].some(o => o.value === S.settings.style)) S.settings.style = SPORT_DEFAULT[S.settings.sport];
+    ss.value = themeOf();
+  };
+  fillThemes();
+  sp.addEventListener('change', () => {
+    const old = SPORTS[S.settings.sport], now = SPORTS[sp.value];
+    S.settings.sport = sp.value; S.settings.style = SPORT_DEFAULT[sp.value]; fillThemes();
+    if (S.settings.event.includes(old)) { S.settings.event = S.settings.event.replace(old, now); $('sEvent').value = S.settings.event; }
+    saveSettings(); renderAll();
+  });
+  ss.addEventListener('change', () => { S.settings.style = ss.value; saveSettings(); renderAll(); });
+  $('sEvent').addEventListener('input', e => { S.settings.event = e.target.value; saveSettings(); scheduleRender(); });
+  $('sDate').addEventListener('input', e => { S.settings.date = e.target.value; saveSettings(); scheduleRender(); });
+  $('sPhone').addEventListener('change', e => { S.settings.phone = e.target.checked; saveSettings(); scheduleRender(); });
+  $('sOrder').value = S.settings.order;
+  $('sOrder').addEventListener('change', () => {
+    if ($('sOrder').value === 'custom') startCustom();
+    S.settings.order = $('sOrder').value; saveSettings(); renderAll();
+  });
+  document.querySelectorAll('[data-size]').forEach(b => b.addEventListener('click', () => { S.settings.thumbs = b.dataset.size; saveSettings(); renderAll(); }));
+  $('reshuffle').addEventListener('click', () => { S.settings.seed = (S.settings.seed || 1) + 1; saveSettings(); renderAll(); });
+  $('groupOrder').addEventListener('click', e => {
+    const b = e.target.closest('[data-mv]'); if (!b) return;
+    const go = groupOrder(), i = go.indexOf(b.dataset.g), j = i + Number(b.dataset.mv);
+    if (j < 0 || j >= go.length) return;
+    [go[i], go[j]] = [go[j], go[i]]; S.settings.groupOrder = go; saveSettings(); buildCaptainsUI(); renderAll();
+    const again = $('groupOrder').querySelector(`[data-g="${b.dataset.g}"][data-mv="${b.dataset.mv}"]`); if (again && !again.disabled) again.focus();
+  });
+  const sw = $('swatches');
+  ACCENTS.forEach(c => {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'swatch'; b.style.setProperty('--c', c); b.dataset.c = c; b.setAttribute('aria-label', 'Accent ' + c);
+    b.addEventListener('click', () => setAccent(c)); sw.append(b);
+  });
+  const ci = document.createElement('input'); ci.type = 'color'; ci.id = 'sAccent'; ci.setAttribute('aria-label', 'Custom accent colour');
+  ci.addEventListener('input', () => setAccent(ci.value.toUpperCase())); sw.append(ci);
+  setAccent(S.settings.accent, true);
+}
+function setAccent(c, quiet) {
+  S.settings.accent = c; saveSettings();
+  document.querySelectorAll('.swatch').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.c.toUpperCase() === c.toUpperCase())));
+  $('sAccent').value = c.length === 7 ? c : '#FFC23D';
+  if (!quiet) scheduleRender();
+}
+
+/* ---------- captains ---------- */
+function capThumb(cap, btn) {
+  const url = cap.photo;
+  btn.style.backgroundImage = url ? `url("${url}")` : '';
+  btn.classList.toggle('has', !!url);
+  btn.setAttribute('aria-label', url ? 'Change captain photo' : 'Add captain photo');
+}
+function restoreCaptainPhotos() {
+  S.captains.forEach(cap => {
+    if (!cap.photo || cap.canvas) return;
+    const img = new Image();
+    img.onload = () => { const c = document.createElement('canvas'); c.width = img.width; c.height = img.height; c.getContext('2d').drawImage(img, 0, 0); cap.canvas = c; scheduleRender(); };
+    img.src = cap.photo;
+  });
+}
+function buildCaptainsUI() {
+  const box = $('caps'); box.innerHTML = '';
+  const names = { F: "Girls' captains", M: "Boys' captains" };
+  groupOrder().filter(g => g !== 'U').forEach(g => {
+    const grp = document.createElement('div'); grp.className = 'capgroup';
+    const h = document.createElement('h3'); h.textContent = names[g];
+    const cnt = document.createElement('span'); cnt.textContent = S.captains.filter(c => c.g === g && c.name.trim()).length + ' named'; h.append(cnt);
+    const list = document.createElement('div'); list.className = 'caps';
+    grp.append(h, list);
+    S.captains.forEach((cap, i) => {
+      if ((cap.g || 'F') !== g) return;
+      const row = document.createElement('div'); row.className = 'cap';
+      const ph = document.createElement('button'); ph.type = 'button'; ph.className = 'capPhoto'; ph.textContent = 'Photo';
+      const file = document.createElement('input'); file.type = 'file'; file.accept = 'image/*,.heic,.heif,.pdf'; file.hidden = true; file.id = 'capFile' + i;
+      ph.addEventListener('click', () => file.click());
+      file.addEventListener('change', async () => {
+        const f = file.files[0]; file.value = ''; if (!f) return;
+        try {
+          const big = cropPortrait(await decodePhoto({ name: f.name, blob: f }));
+          const small = document.createElement('canvas'); small.width = 380; small.height = 534;
+          small.getContext('2d').drawImage(big, 0, 0, 380, 534);
+          cap.canvas = big; cap.photo = small.toDataURL('image/jpeg', 0.85);
+          capThumb(cap, ph); saveCaptains(); scheduleRender();
+        } catch (e) { toast('Could not open that photo. Try a JPG or PNG.'); }
+      });
+      const ins = document.createElement('div'); ins.className = 'ins';
+      const nm = document.createElement('input'); nm.type = 'text'; nm.id = 'capName' + i; nm.placeholder = 'Captain name'; nm.value = cap.name; nm.setAttribute('list', 'playerNames' + g); nm.setAttribute('aria-label', names[g].replace(/s$/, '') + ' name');
+      const tm = document.createElement('input'); tm.type = 'text'; tm.id = 'capTeam' + i; tm.placeholder = 'Team name'; tm.value = cap.team; tm.setAttribute('aria-label', names[g].replace(/s$/, '') + ' team');
+      nm.addEventListener('input', () => { cap.name = nm.value; saveCaptains(); cnt.textContent = S.captains.filter(c => c.g === g && c.name.trim()).length + ' named'; scheduleRender(); });
+      tm.addEventListener('input', () => { cap.team = tm.value; saveCaptains(); scheduleRender(); });
+      ins.append(nm, tm);
+      const rm = document.createElement('button'); rm.type = 'button'; rm.className = 'rm'; rm.textContent = 'Remove'; rm.setAttribute('aria-label', 'Remove this captain');
+      rm.addEventListener('click', () => { S.captains.splice(i, 1); saveCaptains(); buildCaptainsUI(); renderAll(); });
+      row.append(ph, file, ins, rm); list.append(row);
+      capThumb(cap, ph);
+    });
+    const add = document.createElement('button'); add.type = 'button'; add.textContent = 'Add ' + (g === 'F' ? "girls'" : "boys'") + ' captain'; add.dataset.addcap = g;
+    add.addEventListener('click', () => {
+      S.captains.push({ name: '', team: '', photo: null, canvas: null, g }); saveCaptains(); buildCaptainsUI();
+      const ins = $('caps').querySelector(`#capName${S.captains.length - 1}`); if (ins) ins.focus();
+    });
+    grp.append(add); box.append(grp);
+  });
+}
+function fillPlayerNames() {
+  ['F', 'M'].forEach(g => { const dl = $('playerNames' + g); dl.replaceChildren(...players.filter(p => p.gender === g).map(p => new Option(p.name))); });
+}
+
+/* ---------- summary + wall ---------- */
+function esc(s) { return String(s).replace(/[&<>"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch])); }
+function nameList(list, n = 12) {
+  const shown = list.slice(0, n).map(esc).join(', ');
+  return list.length > n ? `${shown} and ${list.length - n} more` : shown;
+}
+function renderSummary(counts) {
+  const photoOk = players.filter(p => photoFor(p)).length;
+  $('counts').innerHTML = `<b>${players.length}</b> players: ${counts.F} girls, ${counts.M} boys` + (counts.U ? `, <span class="warn">${counts.U} unsorted</span>` : '');
+  $('brandEvent').textContent = S.settings.event;
+  const checks = [];
+  if (!S.map.name || !S.map.gender) checks.push({ warn: true, t: 'Pick the Name and Gender columns in Column mapping.' });
+  if (counts.U) checks.push({ warn: true, t: `${counts.U} player${counts.U > 1 ? 's' : ''} without a clear gender go at the end`, names: nameList(players.filter(p => p.gender === 'U').map(p => `${p.name} (“${p.rawGender || 'blank'}”)`)) });
+  if (!S.photos.length) checks.push({ warn: true, t: S.demo ? 'Demo players have no photos, so slides show initials.' : 'No photos yet. Slides show initials until you add the photos .zip.' });
+  else {
+    const missing = players.filter(p => !matched.has(p.row)).map(p => p.name);
+    const failed = players.filter(p => { const f = matched.get(p.row); const pr = f && S.processed.get(f.name); return pr && pr.error; }).map(p => p.name);
+    if (missing.length) checks.push({ warn: true, t: `${missing.length} without a matching photo`, names: nameList(missing) });
+    if (failed.length) checks.push({ warn: true, t: `${failed.length} photo${failed.length > 1 ? 's' : ''} could not be opened`, names: nameList(failed) });
+    $('photoStatus').textContent = `${S.photos.length} files · ${players.length - missing.length} matched`;
+    $('photoStatus').classList.add('ok');
+    if (!missing.length && !failed.length) checks.push({ t: procPromise ? `Matched all ${players.length} photos, preparing them…` : `All ${players.length} players have a photo.` });
+  }
+  if (!S.captains.some(c => c.name.trim())) checks.push({ t: 'Add captain names under Captains to include the "Meet your captains" slides.' });
+  if (dups.size) {
+    const list = [...dups.keys()].map(r => { const p = players.find(x => x.row === r); return `${p.name} (row ${r})`; });
+    checks.push({ warn: true, t: `${dups.size} possible duplicate submission${dups.size > 1 ? 's' : ''}`, names: 'Older copies: ' + nameList(list), btn: 'Remove older copies', act: 'dedupe' });
+  }
+  if (S.removed.size) checks.push({ t: `${S.removed.size} duplicate row${S.removed.size > 1 ? 's' : ''} removed`, btn: 'Restore', act: 'restore' });
+  if (!S.demo && !dups.size && S.map.name) checks.push({ t: 'No duplicate submissions found.' });
+  $('checks').innerHTML = checks.map((c, i) => `<div class="check${c.warn ? ' warn' : ''}"><div><span class="t">${c.t}</span>${c.names ? `<span class="names">${c.names}</span>` : ''}${c.btn ? `<button type="button" data-act="${c.act}">${c.btn}</button>` : ''}</div></div>`).join('');
+}
+$('checks').addEventListener('click', e => {
+  const b = e.target.closest('[data-act]'); if (!b) return;
+  if (b.dataset.act === 'dedupe') dups.forEach((_, r) => S.removed.add(r));
+  else S.removed.clear();
+  renderAll();
+});
+
+// freeze whatever order is on screen, so dragging starts from what people see
+function startCustom() {
+  const cur = { F: [], M: [], U: [] };
+  slides.forEach(sl => { if (sl.type === 'player') cur[sl.g].push(sl.p.row); });
+  ['F', 'M', 'U'].forEach(g => { const keep = custom[g].filter(r => cur[g].includes(r)); custom[g] = S.settings.order === 'custom' && keep.length === cur[g].length ? custom[g] : cur[g]; });
+  saveCustom();
+}
+function moveSlide(from, to) {
+  const a = slides[from], b = slides[to];
+  if (!a || !b || a.type !== 'player' || b.type !== 'player') return false;
+  if (a.g !== b.g) { toast('Players can only move within their own group. Use "Which group comes first" to swap groups.'); return false; }
+  if (S.settings.order !== 'custom') { startCustom(); S.settings.order = 'custom'; saveSettings(); }
+  const list = custom[a.g], i = list.indexOf(a.p.row), j = list.indexOf(b.p.row);
+  if (i < 0 || j < 0) return false;
+  list.splice(i, 1); list.splice(j, 0, a.p.row); saveCustom(); renderAll(); return true;
+}
+function renderGroupOrder(counts) {
+  const names = { F: 'Girls', M: 'Boys', U: 'Unsorted' };
+  const go = groupOrder().filter(g => counts[g] || g !== 'U');
+  $('groupOrder').innerHTML = go.map((g, i) => `<div class="grow" role="listitem"><span class="n">${i + 1}</span><span>${names[g]} <span class="n">(${counts[g]})</span></span>` +
+    `<button type="button" data-g="${g}" data-mv="-1" aria-label="Move ${names[g]} earlier"${i === 0 ? ' disabled' : ''}>Up</button>` +
+    `<button type="button" data-g="${g}" data-mv="1" aria-label="Move ${names[g]} later"${i === go.length - 1 ? ' disabled' : ''}>Down</button></div>`).join('');
+}
+
+const TW = 480, TH = 270;
+let dragFrom = -1;
+function makeThumb() {
+  const b = document.createElement('button'); b.type = 'button'; b.className = 'thumb';
+  b.append(document.createElement('canvas'), document.createElement('span'));
+  b.addEventListener('click', () => present(Number(b.dataset.i)));
+  b.addEventListener('dragstart', e => { dragFrom = Number(b.dataset.i); b.classList.add('dragging'); try { e.dataTransfer.setData('text/plain', b.dataset.i); e.dataTransfer.effectAllowed = 'move'; } catch (er) {} });
+  b.addEventListener('dragend', () => { b.classList.remove('dragging'); document.querySelectorAll('.thumb.dropto').forEach(t => t.classList.remove('dropto')); dragFrom = -1; });
+  b.addEventListener('dragover', e => { if (dragFrom < 0) return; e.preventDefault(); e.stopPropagation(); b.classList.add('dropto'); });
+  b.addEventListener('dragleave', () => b.classList.remove('dropto'));
+  b.addEventListener('drop', e => { if (dragFrom < 0) return; e.preventDefault(); e.stopPropagation(); b.classList.remove('dropto'); moveSlide(dragFrom, Number(b.dataset.i)); });
+  b.addEventListener('keydown', e => {
+    if (!e.altKey || !['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) return;
+    e.preventDefault(); const i = Number(b.dataset.i), j = i + (e.key === 'ArrowLeft' || e.key === 'ArrowUp' ? -1 : 1);
+    if (moveSlide(i, j)) { const t = document.querySelectorAll('#wall .thumb')[j]; if (t) t.focus(); }
+  });
+  return b;
+}
+const thumbPool = [];
+function renderWall() {
+  const wall = $('wall'), frag = document.createDocumentFragment();
+  const head = (t, n) => { const h = document.createElement('div'); h.className = 'wallgroup'; const a = document.createElement('span'); a.textContent = t; const b = document.createElement('span'); b.className = 'n'; b.textContent = n; h.append(a, b); frag.append(h); };
+  head('Opening', '1 slide');
+  let curG = null;
+  slides.forEach((sl, i) => {
+    if ((sl.type === 'section' || sl.type === 'captains') && sl.g !== curG) {
+      curG = sl.g; const sec = slides.find(x => x.type === 'section' && x.g === sl.g);
+      head(sl.label, sec.count + ' player' + (sec.count === 1 ? '' : 's'));
+    }
+    const b = thumbPool[i] || (thumbPool[i] = makeThumb());
+    b.dataset.i = i; b.draggable = sl.type === 'player';
+    const name = sl.type === 'title' ? 'Title' : sl.type === 'captains' ? sl.label + "' captains" : sl.type === 'section' ? sl.label + ' divider' : sl.p.name;
+    const cap = b.lastChild; cap.textContent = (i + 1) + '. ' + name;
+    if (sl.type === 'player' && !S.demo && S.photos.length && !photoFor(sl.p)) { const m = document.createElement('span'); m.className = 'miss'; m.textContent = ' · no photo'; cap.append(m); }
+    b.setAttribute('aria-label', 'Present from slide ' + (i + 1) + ': ' + name);
+    drawSlide(b.firstChild, sl, TW, TH);
+    frag.append(b);
+  });
+  const focused = document.activeElement && document.activeElement.classList.contains('thumb') ? document.activeElement : null;
+  wall.replaceChildren(frag);
+  if (focused && focused.isConnected) focused.focus({ preventScroll: true });
+  $('wallInfo').textContent = `${slides.length} · click one to present from there`;
+}
+function renderThemeCards() {
+  const box = $('themeCards'), ss = $('sStyle');
+  const sample = slides.find(s => s.type === 'player');
+  box.replaceChildren();
+  [...ss.querySelectorAll('optgroup')].forEach(og => {
+    if (!og.children.length) return;
+    const h = document.createElement('div'); h.className = 'tgroup'; h.textContent = og.label; box.append(h);
+    [...og.children].forEach(o => {
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'tcard'; b.setAttribute('role', 'radio');
+      const on = o.value === themeOf(); b.setAttribute('aria-checked', String(on)); b.tabIndex = on ? 0 : -1;
+      const c = document.createElement('canvas'), t = document.createElement('span'); t.textContent = o.textContent;
+      b.append(c, t);
+      b.addEventListener('click', () => { ss.value = o.value; ss.dispatchEvent(new Event('change')); const n = box.querySelector('[aria-checked="true"]'); if (n) n.focus(); });
+      b.addEventListener('keydown', e => {
+        if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) return;
+        e.preventDefault(); const all = [...box.querySelectorAll('.tcard')], k = all.indexOf(b), j = (k + (e.key === 'ArrowLeft' || e.key === 'ArrowUp' ? -1 : 1) + all.length) % all.length; all[j].click();
+      });
+      box.append(b);
+      if (sample) drawSlide(c, Object.assign({}, sample, { style: o.value }), 320, 180);
+    });
+  });
+}
+function renderAll() {
+  const counts = derive();
+  $('demoNote').hidden = !S.demo;
+  $('sOrder').value = S.settings.order;
+  $('reshuffle').hidden = S.settings.order !== 'random';
+  $('orderHint').hidden = S.settings.order !== 'custom';
+  renderGroupOrder(counts);
+  renderSummary(counts); renderWall(); renderThemeCards(); fillPlayerNames();
+  $('wall').classList.toggle('s', S.settings.thumbs === 's'); $('wall').classList.toggle('l', S.settings.thumbs === 'l');
+  document.querySelectorAll('[data-size]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.size === (S.settings.thumbs || 'm'))));
+  if (!$('presenter').hidden) drawStage();
+}
+let rT = 0;
+function scheduleRender() { clearTimeout(rT); rT = setTimeout(renderAll, 120); }
+
+/* ---------- presenter ---------- */
+let cur = 0;
+function drawStage() {
+  const cv = $('stage'), dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const vw = window.innerWidth, vh = window.innerHeight;
+  const w = Math.min(vw, vh * 16 / 9), h = w * 9 / 16;
+  cv.style.width = w + 'px'; cv.style.height = h + 'px';
+  drawSlide(cv, slides[cur], Math.round(w * dpr), Math.round(h * dpr));
+  $('pPos').textContent = `${cur + 1} / ${slides.length}`;
+}
+function go(n) { cur = Math.max(0, Math.min(slides.length - 1, n)); drawStage(); }
+function present(i = 0) {
+  derive(); cur = Math.max(0, Math.min(slides.length - 1, i));
+  $('presenter').hidden = false; drawStage();
+  const el = $('presenter');
+  try { const r = el.requestFullscreen && el.requestFullscreen(); if (r && r.catch) r.catch(() => {}); } catch (e) {}
+  $('pNext').focus();
+}
+function closePresenter() {
+  $('presenter').hidden = true;
+  try { if (document.fullscreenElement) document.exitFullscreen().catch(() => {}); } catch (e) {}
+}
+$('btnPresent').addEventListener('click', () => present(0));
+$('pPrev').addEventListener('click', e => { e.stopPropagation(); go(cur - 1); });
+$('pNext').addEventListener('click', e => { e.stopPropagation(); go(cur + 1); });
+$('pClose').addEventListener('click', e => { e.stopPropagation(); closePresenter(); });
+$('pFull').addEventListener('click', e => {
+  e.stopPropagation();
+  try { if (document.fullscreenElement) document.exitFullscreen(); else { const r = $('presenter').requestFullscreen(); if (r && r.catch) r.catch(() => toast('Fullscreen is not available here.')); } } catch (er) { toast('Fullscreen is not available here.'); }
+});
+$('stage').addEventListener('click', e => { const r = e.currentTarget.getBoundingClientRect(); go(e.clientX - r.left < r.width / 3 ? cur - 1 : cur + 1); });
+let tx = null;
+$('presenter').addEventListener('touchstart', e => { $('presenter').classList.add('touch'); tx = e.touches[0].clientX; }, { passive: true });
+$('presenter').addEventListener('touchend', e => { if (tx === null) return; const dx = e.changedTouches[0].clientX - tx; if (Math.abs(dx) > 40) go(cur + (dx < 0 ? 1 : -1)); tx = null; });
+document.addEventListener('keydown', e => {
+  if ($('presenter').hidden) return;
+  const k = e.key;
+  if (['ArrowRight', 'ArrowDown', 'PageDown', ' ', 'Enter'].includes(k)) { e.preventDefault(); go(cur + 1); }
+  else if (['ArrowLeft', 'ArrowUp', 'PageUp', 'Backspace'].includes(k)) { e.preventDefault(); go(cur - 1); }
+  else if (k === 'Home') go(0);
+  else if (k === 'End') go(slides.length - 1);
+  else if (k === 'f' || k === 'F') $('pFull').click();
+  else if (k === 'Escape') closePresenter();
+});
+document.addEventListener('fullscreenchange', () => { if (!$('presenter').hidden) setTimeout(drawStage, 50); });
+window.addEventListener('resize', () => { if (!$('presenter').hidden) drawStage(); });
+
+/* ---------- exports ---------- */
+let tT = 0;
+function toast(msg, ms = 4000) { const t = $('toast'); t.textContent = msg; t.hidden = false; clearTimeout(tT); if (ms) tT = setTimeout(() => { t.hidden = true; }, ms); }
+const slug = s => (s || 'auction').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'auction';
+async function saveFile(filename, blob) {
+  let dl = null;
+  try { dl = window.claude && window.claude.use ? await window.claude.use('downloads') : null; } catch (e) { dl = null; }
+  if (dl) {
+    try { await dl.save({ filename, data: blob }); toast('Saved ' + filename); }
+    catch (e) {
+      if (e && e.code === 'declined') toast('Download cancelled.');
+      else if (e && e.code === 'rate_limited') toast('A save prompt is already open. Finish that one first.');
+      else toast('This view cannot save files. Open the page in a browser tab and try again.');
+    }
+    return;
+  }
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = filename;
+  document.body.append(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 60000);
+  toast('Downloading ' + filename);
+}
+async function waitPhotos() { derive(); await processPhotos(); derive(); }
+async function busy(btn, label, fn) {
+  const old = btn.innerHTML; btn.disabled = true; btn.textContent = label;
+  try { await fn(); } catch (e) { console.error(e); toast('Export failed: ' + e.message, 6000); }
+  finally { btn.disabled = false; btn.innerHTML = old; }
+}
+
+$('btnPdf').addEventListener('click', () => busy($('btnPdf'), 'Building…', async () => {
+  await waitPhotos();
+  await loadScript(LIB.jspdf);
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation: 'landscape', unit: 'pt', format: [960, 540], compress: true });
+  const cv = document.createElement('canvas');
+  for (let i = 0; i < slides.length; i++) {
+    if (i) doc.addPage([960, 540], 'landscape');
+    drawSlide(cv, slides[i], 1600, 900);
+    doc.addImage(cv.toDataURL('image/jpeg', 0.86), 'JPEG', 0, 0, 960, 540, undefined, 'FAST');
+    if (i % 5 === 0) { toast(`Building PDF ${i + 1} / ${slides.length}…`, 0); await new Promise(r => setTimeout(r)); }
+  }
+  await saveFile(slug(S.settings.event) + '-auction.pdf', doc.output('blob'));
+}));
+
+$('btnPptx').addEventListener('click', () => busy($('btnPptx'), 'Building…', async () => {
+  await waitPhotos();
+  await loadScript(LIB.pptx);
+  const pptx = new window.PptxGenJS(); pptx.layout = 'LAYOUT_WIDE'; pptx.title = S.settings.event;
+  const u = v => v / 144, A = S.settings.accent.replace('#', ''), DARK = C.bg.replace('#', ''), INK = 'FFFFFF', MUT = 'FFE6D6';
+  const meas = document.createElement('canvas').getContext('2d');
+  const DISP = 'Impact', BODY = 'Arial', COND = 'Arial Narrow';
+  const pt = px => Math.round(px / 2 * 10) / 10;
+  const SH = { type: 'outer', color: '230800', blur: 6, offset: 2, angle: 90, opacity: 0.45 };
+  const BGI = {};
+  for (const sl of slides) {
+    const s = pptx.addSlide();
+    if (sl.type !== 'player') {
+      const c = document.createElement('canvas'); drawSlide(c, sl, 1600, 900);
+      s.background = { data: c.toDataURL('image/jpeg', 0.88) };
+    } else {
+      const p = sl.p, st = styleOf(sl), SA = stAccent(st, '#' + A).replace('#', ''), SINK = st.ink.replace('#', ''), SMUT = st.mutedHex;
+      if (!BGI[sl.style]) BGI[sl.style] = bgImage(sl.style);
+      s.background = { data: BGI[sl.style] };
+      const ph = photoFor(p);
+      const shot = () => { const c = document.createElement('canvas'); c.width = 580; c.height = 720; const x = c.getContext('2d'); if (ph) coverDraw(x, ph, 0, 0, 580, 720); else initialsBox(x, p, 0, 0, 580, 720, '#16243A', '#C9D6E6'); return c.toDataURL('image/jpeg', 0.86); };
+      if (st.photo === 'polaroid') {
+        const deg = POL.rot * 180 / Math.PI;
+        s.addImage({ data: shot(), x: u(POL.cx + POL.px), y: u(POL.cy + POL.py), w: u(POL.pw), h: u(POL.ph), rotate: deg });
+        s.addShape(pptx.ShapeType.rect, { x: u(POL.cx - 90), y: u(POL.cy - POL.fh / 2 - 30), w: u(180), h: u(60), rotate: deg, fill: { color: 'E6D7AA', transparency: 22 }, line: { color: 'E6D7AA', transparency: 100 } });
+      } else if (st.photo === 'box') {
+        const [bx, by, bw, bh] = st.box, fc = st.led ? '1A1D22' : st.boxFrame ? st.boxFrame.replace('#', '') : '141414';
+        s.addShape(pptx.ShapeType.rect, { x: u(bx - 4), y: u(by - 4), w: u(bw + 8), h: u(bh + 8), fill: { color: fc }, line: { color: fc } });
+        const c = document.createElement('canvas'); c.width = bw; c.height = bh; const cx = c.getContext('2d');
+        if (ph) coverDraw(cx, st.gray ? grayOf(ph) : ph, 0, 0, bw, bh); else initialsBox(cx, p, 0, 0, bw, bh, st.led ? LED : INK_N, st.led ? '#15181D' : '#CFC8B8');
+        s.addImage({ data: c.toDataURL('image/jpeg', 0.86), x: u(bx), y: u(by), w: u(bw), h: u(bh) });
+      } else {
+        if (ph) s.addImage({ data: ph.toDataURL('image/jpeg', 0.86), x: 0, y: 0, w: u(COURT_X), h: 7.5 });
+        else {
+          s.addShape(pptx.ShapeType.rect, { x: 0, y: 0, w: u(COURT_X), h: 7.5, fill: { color: C.blueDeep.replace('#', '') }, line: { color: C.blueDeep.replace('#', '') } });
+          s.addText(Core.initials(p.name), { x: 0, y: u(330), w: u(COURT_X), h: u(340), fontFace: DISP, fontSize: 140, color: SA, align: 'center', valign: 'middle', margin: 0 });
+        }
+        if (st.edge !== null) { const ec = (st.edge || '#' + SA).replace('#', ''); s.addShape(pptx.ShapeType.rect, { x: u(COURT_X), y: 0, w: u(st.edgeW || 13), h: 7.5, fill: { color: ec }, line: { color: ec } }); }
+      }
+      const L = layoutPlayer(meas, sl, S.settings.phone), X = L.X, W = L.W;
+      s.addText([sl.label.toUpperCase(), p.cohort.toUpperCase()].filter(Boolean).join('  ·  '), { x: u(X), y: u((st.ey || 89) - 31), w: u(800), h: u(62), fontFace: COND, fontSize: 20, bold: true, color: (st.eyebrow || '#' + SA).replace('#', ''), charSpacing: 4, valign: 'middle', margin: 0 });
+      const nameH = L.name.lines.length * L.name.size * L.name.lh;
+      const tsh = st.shadow ? SH : undefined;
+      s.addText(p.name.toUpperCase(), { x: u(X), y: u(L.name.top), w: u(W), h: u(nameH + 10), fontFace: DISP, fontSize: pt(L.name.size) * 0.82, color: st.led ? 'FFB21E' : SINK, valign: 'top', fit: 'shrink', lineSpacingMultiple: 0.9, shadow: tsh, margin: 0 });
+      s.addShape(pptx.ShapeType.rect, { x: u(X), y: u(L.rule.top), w: u(120), h: u(8), fill: { color: SA }, line: { color: SA } });
+      const label = (t, y) => s.addText(t, { x: u(X), y: u(y), w: u(W), h: u(40), fontFace: COND, bold: true, fontSize: 15, color: SMUT, charSpacing: 4, margin: 0 });
+      if (L.extra) {
+        label(L.extra.label, L.extra.labelTop);
+        s.addText(p.extra, { x: u(X), y: u(L.extra.top), w: u(W), h: u(L.extra.block.lines.length * L.extra.block.size * 1.25 + 8), fontFace: BODY, fontSize: pt(L.extra.block.size) * 0.9, color: SINK, valign: 'top', fit: 'shrink', margin: 0 });
+      }
+      label('EXPERIENCE', L.expLabelTop);
+      s.addText(p.experience || '—', { x: u(X), y: u(L.expTop), w: u(W), h: u(Math.max(70, L.bottom - L.expTop)), fontFace: BODY, fontSize: pt(L.exp.size) * 0.9, color: p.experience ? SINK : SMUT, valign: 'top', fit: 'shrink', lineSpacingMultiple: 1.15, shadow: tsh, margin: 0 });
+      if (L.phone) {
+        label('PHONE', 920);
+        s.addText(L.phone, { x: u(X + 140), y: u(905), w: u(600), h: u(60), fontFace: COND, bold: true, fontSize: 26, color: SINK, margin: 0 });
+      }
+      if (!st.overlay) s.addText(S.settings.event.toUpperCase(), { x: u(X), y: u(st.led ? 965 : 1015), w: u(700), h: u(44), fontFace: COND, bold: true, fontSize: 14, color: SMUT, charSpacing: 3, margin: 0 });
+    }
+  }
+  toast('Packing PowerPoint…', 0);
+  const blob = await pptx.write({ outputType: 'blob' });
+  await saveFile(slug(S.settings.event) + '-auction.pptx', blob);
+}));
+
+/* ---------- boot ---------- */
+S.rows = DEMO; S.headers = DEMO_HEADERS; S.map = Core.detectMapping(DEMO_HEADERS, DEMO);
+initSettings(); buildMapUI(); restoreCaptainPhotos(); renderAll(); buildCaptainsUI();
+if (document.fonts) {
+  Promise.all([
+    document.fonts.load(`800 100px ${F.display}`), document.fonts.load(`900 100px ${F.display}`),
+    document.fonts.load(`500 40px ${F.body}`), document.fonts.load(`italic 500 40px ${F.body}`),
+    document.fonts.load(`600 40px ${F.cond}`), document.fonts.load(`700 40px ${F.cond}`),
+  ]).catch(() => {}).then(renderAll);
+}
+})();
+</script>
